@@ -17,23 +17,23 @@ trait DbHelper {
   var initialised = false
   
   val schema: DbSchema
-
+  
+  val driver = "org.postgresql.Driver"
   val host = "localhost"
   val database: String
   val username: Box[String]
   val password: Box[String]
+  
+  def url = "jdbc:postgresql://" + host + "/" + database
 
+  val adapter: DatabaseAdapter = new PostgreSqlAdapter
+  
   var withDb = DB.buildLoanWrapper
   
   def init: Unit = {
     if(!initialised) {
-      val driver = "org.postgresql.Driver"
-    
-      val url = "jdbc:postgresql://" + host + "/" + database
-    
       val manager = new StandardDBVendor(driver, url, username, password)
-      val adapter = new PostgreSqlAdapter
-    
+      
       DB.defineConnectionManager(DefaultConnectionIdentifier, manager)
     
       SquerylRecord.init(() => adapter)

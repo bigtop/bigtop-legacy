@@ -10,9 +10,6 @@ import org.squeryl.Table
 import org.squeryl.Query
 import org.squeryl.annotations.Column
 
-/** Mix this into a Field to prevent it being compared in IdRecord.equals() */
-trait IgnoreInEquals
-
 /** Mix this into a Record to get a primary key, and save, delete, and equals methods. */
 trait IdRecord[T <: IdRecord[T]] extends Record[T] with KeyedRecord[Long] {
   self: T =>
@@ -42,5 +39,15 @@ trait IdRecord[T <: IdRecord[T]] extends Record[T] with KeyedRecord[Long] {
 
     case _ => false
   }
+  
+}
+
+/** Mix this into a MetaRecord to provide extra IdRecord-oriented queries. */
+trait IdRecordMeta[T <: IdRecord[T]] extends MetaRecord[T] {
+  self: T =>
+    
+  def byId(id: Long): Query[T] = table.where(_.idField === id)
+  
+  def all: Query[T] = table.where(_ => true)
   
 }

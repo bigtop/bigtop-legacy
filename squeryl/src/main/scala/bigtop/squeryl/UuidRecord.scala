@@ -17,7 +17,16 @@ trait UuidRecord[T <: UuidRecord[T]] extends IdRecord[T] {
   self: T =>
   
   val uuid = new StringField(this, 36, genUuid)
-  
-  def genUuid = UUID.randomUUID.toString
 
+  def genUuid = UUID.randomUUID.toString
+  
+}
+
+/** Mix this into an IdRecordMeta to provide UuidRecord-related queries. */
+trait UuidRecordMeta[T <: UuidRecord[T]] extends IdRecordMeta[T] {
+  self: T =>
+  
+  def byUuid(uuid: String): Query[T] =
+    table.where(_.uuid === uuid)
+  
 }
