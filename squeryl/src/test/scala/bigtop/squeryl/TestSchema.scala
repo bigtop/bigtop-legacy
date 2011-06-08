@@ -30,10 +30,18 @@ object TestDb extends DbHelper {
 // Schema ---------------------------------------
 
 object TestSchema extends DbSchema {
+  val users = table[User]
   val projects = table[Project]
 }
 
 // Entities -------------------------------------
+
+class User private() extends IdRecord[User] with BaseUser[User] {
+  def meta = User
+  def table = TestSchema.users
+}
+
+object User extends User with IdRecordMeta[User] with BaseUserMeta[User]
 
 class Project private() extends IdRecord[Project] with UuidRecord[Project] {
   def meta = Project

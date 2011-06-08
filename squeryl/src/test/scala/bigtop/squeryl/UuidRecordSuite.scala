@@ -10,7 +10,7 @@ class UuidRecordSuite extends BaseSuite {
 
   test("byUuid") {
     val project1 = Project.createRecord.uuid("foo").save
-    expect(Some(project1))(Project.byUuid("foo"))
+    expect(Some(project1))(Project.byUuid("foo").headOption)
   }
   
   test("genUuid") {

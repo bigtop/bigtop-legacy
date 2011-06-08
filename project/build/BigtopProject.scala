@@ -20,8 +20,8 @@ class BigtopProject(info: ProjectInfo) extends ParentProject(info) {
   // Subprojects --------------------------------
 
   lazy val debug = bigtopProject("debug", liftWebkit, scalatest)()
-
   lazy val squeryl = bigtopProject("squeryl", liftWebkit, liftSquerylRecord, postgresql, scalatest)(debug)
+  lazy val util = bigtopProject("util", liftWebkit, scalatest)(debug)
   
   // Helpers ------------------------------------
 

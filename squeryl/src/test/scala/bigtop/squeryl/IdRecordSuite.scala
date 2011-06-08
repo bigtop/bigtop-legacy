@@ -12,7 +12,7 @@ class IdRecordSuite extends BaseSuite {
     
     // ID starts at 0, database starts empty:
     expect(0)(project1.idField.is)
-    expect(None)(Project.byUuid("foo"))
+    expect(None)(Project.byUuid("foo").headOption)
 
     // Save the struct:
     val project2 = project1.save
@@ -22,7 +22,7 @@ class IdRecordSuite extends BaseSuite {
     assert(project1.idField.is > 0)
 
     // Database contains the struct:
-    expect(Some(project2))(Project.byUuid("foo"))
+    expect(Some(project2))(Project.byUuid("foo").headOption)
   }
 
   test("delete") {
@@ -31,7 +31,7 @@ class IdRecordSuite extends BaseSuite {
     
     // ID is assigned, struct is in database:
     assert(project1.idField.is > 0)
-    expect(Some(project1))(Project.byUuid("foo"))
+    expect(Some(project1))(Project.byUuid("foo").headOption)
     
     // Delete the struct:
     val project2 = project1.delete
@@ -41,18 +41,18 @@ class IdRecordSuite extends BaseSuite {
 
     // ID set to 0, database ends up empty:
     expect(0)(project1.idField.is)
-    expect(None)(Project.byUuid("foo"))
+    expect(None)(Project.byUuid("foo").headOption)
   }
   
   test("byId") {
     val project1 = Project.createRecord.uuid("foo").save
-    expect(Some(project1))(Project.byId(project1.id))
+    expect(Some(project1))(Project.byId(project1.id).headOption)
   }
   
   test("equals") {
-    assert(Project.createRecord.uuid("abc") == Project.createRecord.uuid("abc"))
+    assert(Project.createRecord.uuid("abc") === Project.createRecord.uuid("abc"))
     assert(Project.createRecord.uuid("abc") != Project.createRecord.uuid("bcd"))
-    assert(Project.createRecord.uuid("abc").ignore("a") == Project.createRecord.uuid("bcd").ignore("b"))
+    assert(Project.createRecord.uuid("abc").ignore("a") === Project.createRecord.uuid("abc").ignore("b"))
   }
 
 }
