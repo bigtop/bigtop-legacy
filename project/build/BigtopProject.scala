@@ -28,7 +28,7 @@ class BigtopProject(info: ProjectInfo) extends ParentProject(info) {
   
   // Helpers ------------------------------------
 
-  val untypedResolver = {
+  lazy val untypedResolver = {
     val host = System.getenv("DEFAULT_REPO_HOST")
     val path = System.getenv("DEFAULT_REPO_PATH")
     val user = System.getenv("DEFAULT_REPO_USER")
@@ -37,7 +37,7 @@ class BigtopProject(info: ProjectInfo) extends ParentProject(info) {
     Resolver.sftp("Default Repo", host, path).as(user, keyfile)
   }
 
-  val publishTo = untypedResolver
+  lazy val publishTo = untypedResolver
   
   def bigtopProject(name: String, libraries: ModuleID*)(dependencies: Project*) =
     project(name, "bigtop-" + name, new BigtopSubproject(_, libraries: _*), dependencies: _*)
@@ -47,7 +47,7 @@ class BigtopProject(info: ProjectInfo) extends ParentProject(info) {
     override def libraryDependencies =
       super.libraryDependencies ++ libs
     
-    val publishTo = untypedResolver
+    lazy val publishTo = untypedResolver
     
     override def packageAction =
       super.packageAction dependsOn { test }
