@@ -29,15 +29,21 @@ class BigtopProject(info: ProjectInfo) extends ParentProject(info) {
   // Helpers ------------------------------------
 
   lazy val untypedResolver = {
-    val host = System.getenv("DEFAULT_REPO_HOST")
-    val path = System.getenv("DEFAULT_REPO_PATH")
-    val user = System.getenv("DEFAULT_REPO_USER")
-    val keyfile = new java.io.File(System.getenv("DEFAULT_REPO_KEYFILE"))
-    
-    Resolver.sftp("Default Repo", host, path).as(user, keyfile)
+    def OptionOf[T](v: T): Option[T] = {
+      if (v == null) 
+        None
+      else
+        Some(v)
+    }
+
+    for { host <- OptionOf(System.getenv("DEFAULT_REPO_HOST"))
+          path <- OptionOf(System.getenv("DEFAULT_REPO_PATH"))
+          user <- OptionOf(System.getenv("DEFAULT_REPO_USER"))
+          keyfile <- OptionOf(System.getenv("DEFAULT_REPO_KEYFILE")) 
+    } yield Resolver.sftp("Default Repo", host, path).as(user, new java.io.File(keyfile))
   }
 
-  lazy val publishTo = untypedResolver
+  val publishTo = untypedResolver.getOrElse(null)
   
   def bigtopProject(name: String, libraries: ModuleID*)(dependencies: Project*) =
     project(name, "bigtop-" + name, new BigtopSubproject(_, libraries: _*), dependencies: _*)
@@ -47,7 +53,7 @@ class BigtopProject(info: ProjectInfo) extends ParentProject(info) {
     override def libraryDependencies =
       super.libraryDependencies ++ libs
     
-    lazy val publishTo = untypedResolver
+    val publishTo = untypedResolver.getOrElse(null)
     
     override def packageAction =
       super.packageAction dependsOn { test }
