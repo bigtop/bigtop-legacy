@@ -3,6 +3,9 @@ package core
 
 import java.net._
 
+import net.liftweb.common.Box
+import net.liftweb.http.S
+
 case class Url(
   val scheme: Option[String] = None,
   val user: Option[String] = None,
@@ -147,6 +150,15 @@ object Url {
         parsePath(Option(url.getPath)),
         parseQuery(Option(url.getQuery)),
         Option(url.getRef))
+  
+  def currentPathAndQuery: Box[Url] =
+    S.request.
+      // get the full path, including the servlet context path:
+      map(_.request.uri).
+      // append the query string:
+      map(p => S.queryString.map(q => p + "?" + q).openOr(p)).
+      // parse into a Url:
+      map(Url(_))
   
   def urlDecode(str: String): String =
     URLDecoder.decode(str, "utf-8")
