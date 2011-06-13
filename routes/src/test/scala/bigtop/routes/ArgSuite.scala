@@ -6,16 +6,16 @@ import org.scalatest._
 class ArgSuite extends FunSuite with Assertions {
   
   test("IntArg") {
-    expect("123")(IntArg apply 123)
-    expect("-123")(IntArg apply -123)
-    expect(Some(123))(IntArg unapply "123")
-    expect(Some(-123))(IntArg unapply "-123")
-    expect(None)(IntArg unapply "abc")
+    expect("123")(IntArg encode 123)
+    expect("-123")(IntArg encode -123)
+    expect(Some(123))(IntArg decode "123")
+    expect(Some(-123))(IntArg decode "-123")
+    expect(None)(IntArg decode "abc")
   }
   
   test("StringArg") {
-    expect("a%2Fb")(StringArg apply "a/b")
-    expect(Some("a/b"))(StringArg unapply "a%2Fb")
+    expect("a%2Fb")(StringArg encode "a/b")
+    expect(Some("a/b"))(StringArg decode "a%2Fb")
   }
   
 }

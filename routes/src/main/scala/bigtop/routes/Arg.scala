@@ -3,8 +3,8 @@ package routes
 
 trait Arg[T] {
 
-  def apply(value: T): String
-  def unapply(path: String): Option[T]
+  def encode(value: T): String
+  def decode(path: String): Option[T]
   
   def urlEncode(str: String): String =
     java.net.URLEncoder.encode(str, "utf-8")
@@ -16,10 +16,10 @@ trait Arg[T] {
 
 object IntArg extends Arg[Int] {
   
-  def apply(value: Int) =
+  def encode(value: Int) =
     urlEncode(value.toString)
   
-  def unapply(path: String) =
+  def decode(path: String) =
     try {
       Some(urlDecode(path).toInt)
     } catch {
@@ -30,10 +30,10 @@ object IntArg extends Arg[Int] {
 
 object StringArg extends Arg[String] {
   
-  def apply(value: String) =
+  def encode(value: String) =
     urlEncode(value)
   
-  def unapply(path: String) =
+  def decode(path: String) =
     Some(urlDecode(path))
   
 }
