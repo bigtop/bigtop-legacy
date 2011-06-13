@@ -4,9 +4,13 @@ class BigtopProject(info: ProjectInfo) extends ParentProject(info) {
 
   // Libraries ----------------------------------
 
-  val liftVersion = "2.3"
+  val liftVersion = "2.4-M2"
+  val rogueVersion = "1.0.14-LIFT-2.4-M2"
   
   // Lift:
+  lazy val rogue = "com.foursquare" %% "rogue" % rogueVersion withSources()
+  lazy val liftMongodb = "net.liftweb" %% "lift-mongodb" % liftVersion % "compile"
+  lazy val liftMongodbRecord = "net.liftweb" %% "lift-mongodb-record" % liftVersion % "compile"
   lazy val liftSquerylRecord = "net.liftweb" %% "lift-squeryl-record" % liftVersion % "compile"
   lazy val liftTestkit = "net.liftweb" %% "lift-testkit" % liftVersion % "test"
   lazy val liftWebkit = "net.liftweb" %% "lift-webkit" % liftVersion % "compile"
@@ -24,6 +28,7 @@ class BigtopProject(info: ProjectInfo) extends ParentProject(info) {
   lazy val debug = bigtopProject("debug", liftWebkit, scalatest)()
   lazy val report = bigtopProject("report", liftWebkit, scalatest)(debug, core)
   lazy val squeryl = bigtopProject("squeryl", liftWebkit, liftSquerylRecord, postgresql, scalatest)(debug)
+  lazy val mongodb = bigtopProject("mongodb", liftWebkit, liftMongodb, liftMongodbRecord, rogue, scalatest)(debug)
   lazy val util = bigtopProject("util", liftWebkit, scalatest)(debug)
   
   // Helpers ------------------------------------

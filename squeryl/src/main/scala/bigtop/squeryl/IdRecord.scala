@@ -27,19 +27,27 @@ trait IdRecord[T <: IdRecord[T]] extends Record[T] with KeyedRecord[Long] {
     this
   }
   
-  override def equals(other: Any) = other match {
-    case that: T =>
-      this.fields.zip(that.fields).foldLeft(true) { (accum, zipped) =>
-        accum && (zipped match {
-          case (field1: PasswordField[_], field2: PasswordField[_]) => true
-          case (field1: IgnoreInEquals, field2: IgnoreInEquals) => true
-          case (field1, field2) => field1.get == field2.get
-        })
-      }
-
-    case _ => false
-  }
+  lazy val comparableFields = 
+    allFields.filter(field => !field.isInstanceOf[PasswordField[_]] && 
+                              !field.isInstanceOf[IgnoreInEquals])
   
+  lazy val comparableDataFields = 
+    comparableFields.filter(_ != idField)
+  
+  def fieldsEqual(fieldsOf: (T) => List[Field[_, T]])(that: T): Boolean =
+    fieldsOf(this).zip(fieldsOf(that)).foldLeft(true) {
+      (accum, zipped) => accum && (zipped._1.get == zipped._2.get)
+    }
+  
+  override def equals(other: Any) =
+    other match {
+      case that: T => fieldsEqual(_.comparableFields)(that)
+      case _ => false
+    }
+  
+  def dataEquals(that: T) = 
+    fieldsEqual(_.comparableDataFields)(that)
+
 }
 
 /** Mix this into a MetaRecord to provide extra IdRecord-oriented queries. */
