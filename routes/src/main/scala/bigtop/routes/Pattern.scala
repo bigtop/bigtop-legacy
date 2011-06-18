@@ -1,61 +1,77 @@
 package bigtop
 package routes
 
-import up.{HList, HNil, HCons, Fold}
-import up.HList._
+//import up.{HList, HNil, HCons, Fold}
+//import up.HList._
 
 case class PatternException(msg: String, value: Any) extends Exception(msg) {
   override def toString: String =
     msg + " " + value.toString
 }
 
-class UrlPattern[P <: PList](pList: P) {  
+class UrlPattern[P <: Pattern](pList: P) {  
   def decode(path: List[String]): Option[P#Result] = pList.decode(path)
 }
 
+// A Pattern is a list of terms (currently called Args)
+//
+// The list is constructed of PNil and PCons structures --
+// needed to propagate the types of the terms.
 
 // A Pattern list
-sealed trait PList {
+sealed trait Pattern {
+  type This <: Pattern
   type Head
-  type Tail <: PList
-  type Result 
+  type Tail <: Pattern
+  type Result <: HList // The result type if this pattern matches
 
   def decode(path: List[String]): Option[Result]
 }
 
-final case class PConsNull[Tl <: PList, TR <: HList](head: Arg[Unit], tail: Tl) 
-  extends PList {
-   type Head = Arg[Unit]
-   type Tail = Tl
-   type Result = TR
+abstract sealed class PCons[Hd, Tl <: Pattern](head: Arg[Hd], tail: Tl) extends Pattern {
+  def /:[V](v: Arg[V]): PCons[V, This]
+}
 
-   def /:[V](v: Arg[V]) = v match {
-     case v:Arg[Unit] => PConsNull[PConsNull[Tl, Result], Result](v, this)
-     case _ => PCons[V, PConsNull[Tl, Result], Result](v, this)
-   }
+// A PCons cells where the term evaluates to Unit on a
+// successful match, and hence its result is not included in
+// the result.
+final case class PLiteral[Hd, Tl <: Pattern](head: Arg[Hd], tail: Tl) 
+           extends PCons[Hd, Tl](head, tail) {
+  type This = PLiteral[Hd, Tl]
+  type Head = Arg[Hd]
+  type Tail = Tl
+  type Result = Tl#Result
+  
+  
+  def /:[V](v: Arg[V]): PCons[V, This] = v match {
+    case v:Arg[Unit] => PLiteral[V, This](v, this)
+    case _ => PMatch[V, This](v, this)
+  }
 
   def decode(path: List[String]): Option[Result] =
     path match {
-      case Pair(x:String, xs:List[String]) => 
+      case x :: xs => 
         if (head.decode(x).isDefined) tail.decode(xs) else None
       case Nil => None
     }     
 }
 
-final case class PCons[Hd, Tl <: PList, TR <: HList](head: Arg[Hd], tail: Tl)
- extends PList {
+// A PCons cell where the term evaluates to something interesting
+final case class PMatch[Hd, Tl <: Pattern](head: Arg[Hd], tail: Tl) 
+           extends PCons[Hd, Tl](head, tail) {
+  type This = PMatch[Hd, Tl]
   type Head = Arg[Hd]
   type Tail = Tl
-  type Result = HCons[Hd, TR]
+  type Result = HCons[Hd, Tl#Result]
 
-  def /:[V](v: Arg[V]) = v match {
-    case v:Arg[Unit] => PConsNull[PCons[Hd, Tl, Result], Result](v, this)
-    case _ => PCons[V, PCons[Hd, Tl, Result], Result](v, this)
+  def /:[V](v: Arg[V]): PCons[V, This] = v match {
+    case v:Arg[Unit] => PLiteral[V, This](v, this)
+    case _ => PMatch[V, This](v, this)
   }
 
   def decode(path: List[String]): Option[Result] =
     path match {
-      case Pair(x:String, xs:List[String]) => 
+      case x :: xs => 
         head.decode(x).flatMap{ v => 
           tail.decode(xs) match {
             case None     => None
@@ -64,17 +80,17 @@ final case class PCons[Hd, Tl <: PList, TR <: HList](head: Arg[Hd], tail: Tl)
         }
       case Nil => None
     }
-
 }
 
-case class PNil() extends PList {
+class PNil extends Pattern {
+  type This = PNil
   type Head = Nothing
   type Tail = PNil
   type Result = HNil
 
-  def /:[V](v: Arg[V]) = v match {
-    case v:Arg[Unit] => PCons[Unit, PNil, HNil](v, this)
-    case _ => PCons[V, PNil, HCons[V, HNil]](v, this)
+  def /:[V](v: Arg[V]): PCons[V, This] = v match {
+    case v:Arg[Unit] => PLiteral[Unit, This](v, this)
+    case _ => PMatch[V, This](v, this)
   }
 
   def decode(path: List[String]): Option[Result] =
@@ -83,60 +99,32 @@ case class PNil() extends PList {
       case _ => None
     }
 }
-object PNil extends PNil
+case object PNil extends PNil
 
+object PatternOps {
+  implicit def string2Arg(v: String):ConstArg = ConstArg(v)
+}
 
+//----------------------------------------------------------
+// HList Implementation based on Mark Harrah's Up
+// https://github.com/harrah/up
+//----------------------------------------------------------
 
+sealed trait HList
+{
+	type Head
+	type Tail <: HList
+}
 
-// trait ListPattern[L <: HList] {
-
-//   def encodeHList(value: L): List[String]
-//   def decodeHList(path: List[String]): Option[L]
-
-//   def encodeError(in: Any) = throw new PatternException("Could not encode", in)
-//   def decodeError(in: Any) = throw new PatternException("Could not decode", in)
-  
-// }
-
-// case object NilPattern extends ListPattern[HNil] { // with Pattern0 {
-  
-//   def encodeHList(value: HNil) = Nil
-  
-//   def decodeHList(path: List[String]) =
-//     path match {
-//       case Nil => Some(HNil)
-//       case _ => None
-//     }
-
-// }
-
-// case class ConstPattern[L <: HList](val const: String, val base: ListPattern[L]) extends ListPattern[L] {
-  
-//   def encodeHList(value: L) =
-//     const :: base.encodeHList(value)
-  
-//   def decodeHList(path: List[String]) =
-//     path match {
-//       case h :: t if h == const => base.decodeHList(t)
-//       case _ => None
-//     }
-  
-// }
-
-// case class ArgPattern[T, L <: HList](val arg: Arg[T], val base: ListPattern[L]) extends ListPattern[HCons[T, L]] {
-  
-//   def encodeHList(value: HCons[T, L]) =
-//     arg.encode(value.head) :: base.encodeHList(value.tail)
-  
-//   def decodeHList(path: List[String]) =
-//     path match {
-//       case h :: t =>
-//         for {
-//           h <- arg.decode(h)
-//           t <- base.decodeHList(t)
-//         } yield { h :: t }
-//       case _ => None
-//     }
-
-// }
+final case class HCons[H, T <: HList](head : H, tail : T) extends HList
+{
+	type Head = H
+	type Tail = T
+}
+sealed class HNil extends HList
+{
+	type Head = Nothing
+	type Tail = HNil
+}
+case object HNil extends HNil
 
