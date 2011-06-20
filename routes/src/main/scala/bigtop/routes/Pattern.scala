@@ -27,24 +27,22 @@ sealed trait Pattern {
 }
 
 abstract sealed class PCons[Hd, Tl <: Pattern](head: Arg[Hd], tail: Tl) extends Pattern {
-  def /:[V](v: Arg[V]): PCons[V, This]
+  def /:(v: LiteralArg): PLiteral[This]
+  def /:[V](v: MatchArg[V]): PMatch[V, This]
 }
 
 // A PCons cells where the term evaluates to Unit on a
 // successful match, and hence its result is not included in
 // the result.
-final case class PLiteral[Hd, Tl <: Pattern](head: Arg[Hd], tail: Tl) 
-           extends PCons[Hd, Tl](head, tail) {
-  type This = PLiteral[Hd, Tl]
-  type Head = Arg[Hd]
+final case class PLiteral[Tl <: Pattern](head: LiteralArg, tail: Tl) 
+           extends PCons[Unit, Tl](head, tail) {
+  type This = PLiteral[Tl]
+  type Head = Unit
   type Tail = Tl
   type Result = Tl#Result
   
-  
-  def /:[V](v: Arg[V]): PCons[V, This] = v match {
-    case v:ConstArg => PLiteral[V, This](v, this)
-    case _ => PMatch[V, This](v, this)
-  }
+  def /:[V](v: MatchArg[V]): PMatch[V, This] = PMatch[V, This](v, this)
+  def /:(v: LiteralArg): PLiteral[This] = PLiteral[This](v, this)
 
   def decode(path: List[String]): Option[Result] =
     path match {
@@ -55,17 +53,15 @@ final case class PLiteral[Hd, Tl <: Pattern](head: Arg[Hd], tail: Tl)
 }
 
 // A PCons cell where the term evaluates to something interesting
-final case class PMatch[Hd, Tl <: Pattern](head: Arg[Hd], tail: Tl) 
+final case class PMatch[Hd, Tl <: Pattern](head: MatchArg[Hd], tail: Tl) 
            extends PCons[Hd, Tl](head, tail) {
   type This = PMatch[Hd, Tl]
   type Head = Arg[Hd]
   type Tail = Tl
   type Result = HCons[Hd, Tl#Result]
 
-  def /:[V](v: Arg[V]): PCons[V, This] = v match {
-    case v:ConstArg => PLiteral[V, This](v, this)
-    case _ => PMatch[V, This](v, this)
-  }
+  def /:(v: LiteralArg): PLiteral[This] = PLiteral[This](v, this)
+  def /:[V](v: MatchArg[V]): PMatch[V, This] = PMatch[V, This](v, this)
 
   def decode(path: List[String]): Option[Result] =
     path match {
@@ -86,10 +82,8 @@ class PNil extends Pattern {
   type Tail = PNil
   type Result = HNil
 
-  def /:[V](v: Arg[V]): PCons[V, This] = v match {
-    case v:ConstArg => PLiteral[Unit, This](v, this)
-    case _ => PMatch[V, This](v, this)
-  }
+  def /:(v: LiteralArg): PLiteral[This] = PLiteral[This](v, this)
+  def /:[V](v: MatchArg[V]): PMatch[V, This] = PMatch[V, This](v, this)
 
   def decode(path: List[String]): Option[Result] =
     path match {

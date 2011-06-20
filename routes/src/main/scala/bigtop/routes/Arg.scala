@@ -1,7 +1,12 @@
 package bigtop
 package routes
 
-trait Arg[T] {
+// The Pattern encodes requires we specify if an Arg is a
+// Literal or a Match. Hence we seal the Arg trait and
+// require implementations to use the corresponding
+// sub-traits.
+
+sealed trait Arg[T] {
 
   def encode(value: T): String
   def decode(path: String): Option[T]
@@ -14,7 +19,10 @@ trait Arg[T] {
   
 }
 
-object IntArg extends Arg[Int] {
+trait LiteralArg extends Arg[Unit]
+trait MatchArg[T] extends Arg[T]
+
+object IntArg extends MatchArg[Int] {
   
   def encode(value: Int) =
     urlEncode(value.toString)
@@ -28,7 +36,7 @@ object IntArg extends Arg[Int] {
   
 }
 
-object StringArg extends Arg[String] {
+object StringArg extends MatchArg[String] {
   
   def encode(value: String) =
     urlEncode(value)
@@ -38,7 +46,7 @@ object StringArg extends Arg[String] {
   
 }
 
-case class ConstArg(value: String) extends Arg[Unit] {
+case class ConstArg(value: String) extends LiteralArg {
 
   def encode(v: Unit): String = value
   
