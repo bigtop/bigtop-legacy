@@ -1,8 +1,6 @@
 package bigtop
 package routes
 
-//import up.{HList, HNil, HCons, Fold}
-//import up.HList._
 
 case class PatternException(msg: String, value: Any) extends Exception(msg) {
   override def toString: String =
@@ -44,7 +42,7 @@ final case class PLiteral[Hd, Tl <: Pattern](head: Arg[Hd], tail: Tl)
   
   
   def /:[V](v: Arg[V]): PCons[V, This] = v match {
-    case v:Arg[Unit] => PLiteral[V, This](v, this)
+    case v:ConstArg => PLiteral[V, This](v, this)
     case _ => PMatch[V, This](v, this)
   }
 
@@ -65,7 +63,7 @@ final case class PMatch[Hd, Tl <: Pattern](head: Arg[Hd], tail: Tl)
   type Result = HCons[Hd, Tl#Result]
 
   def /:[V](v: Arg[V]): PCons[V, This] = v match {
-    case v:Arg[Unit] => PLiteral[V, This](v, this)
+    case v:ConstArg => PLiteral[V, This](v, this)
     case _ => PMatch[V, This](v, this)
   }
 
@@ -89,7 +87,7 @@ class PNil extends Pattern {
   type Result = HNil
 
   def /:[V](v: Arg[V]): PCons[V, This] = v match {
-    case v:Arg[Unit] => PLiteral[Unit, This](v, this)
+    case v:ConstArg => PLiteral[Unit, This](v, this)
     case _ => PMatch[V, This](v, this)
   }
 
@@ -103,12 +101,91 @@ case object PNil extends PNil
 
 object PatternOps {
   implicit def string2Arg(v: String):ConstArg = ConstArg(v)
+
+  implicit def hlist2Tuple1[V](v: HCons[V, HNil]): Tuple1[V] = Tuple1(v.head)
+
+  implicit def hlist2Tuple2[A, B](v: HCons[A, HCons[B, HNil]]): Tuple2[A, B] = {
+    val h1 = v.head
+    val t1 = v.tail
+    val h2 = t1.head
+ 
+    Tuple2(h1, h2)
+  }
+
+  implicit def hlist2Tuple3[A, B, C](v: HCons[A, HCons[B, HCons[C, HNil]]]): Tuple3[A, B, C] = {
+    val h1 = v.head
+    val t1 = v.tail
+    val h2 = t1.head
+    val t2 = t1.tail
+    val h3 = t2.head
+ 
+    Tuple3(h1, h2, h3)
+  }
+
+  implicit def hlist2Tuple4[A, B, C, D](v: HCons[A, HCons[B, HCons[C, HCons[D, HNil]]]]): Tuple4[A, B, C, D] = {
+    val h1 = v.head
+    val t1 = v.tail
+    val h2 = t1.head
+    val t2 = t1.tail
+    val h3 = t2.head
+    val t3 = t2.tail
+    val h4 = t3.head
+ 
+    Tuple4(h1, h2, h3, h4)
+  }
+
+  implicit def hlist2Tuple5[A, B, C, D, E](v: HCons[A, HCons[B, HCons[C, HCons[D, HCons[E, HNil]]]]]): Tuple5[A, B, C, D, E] = {
+    val h1 = v.head
+    val t1 = v.tail
+    val h2 = t1.head
+    val t2 = t1.tail
+    val h3 = t2.head
+    val t3 = t2.tail
+    val h4 = t3.head
+    val t4 = t3.tail
+    val h5 = t4.head
+ 
+    Tuple5(h1, h2, h3, h4, h5)
+  }
+
+  implicit def hlist2Tuple6[A, B, C, D, E, F](v: HCons[A, HCons[B, HCons[C, HCons[D, HCons[E, HCons[F, HNil]]]]]]): Tuple6[A, B, C, D, E, F] = {
+    val h1 = v.head
+    val t1 = v.tail
+    val h2 = t1.head
+    val t2 = t1.tail
+    val h3 = t2.head
+    val t3 = t2.tail
+    val h4 = t3.head
+    val t4 = t3.tail
+    val h5 = t4.head
+    val t5 = t4.tail
+    val h6 = t5.head
+ 
+    Tuple6(h1, h2, h3, h4, h5, h6)
+  }
+
+  implicit def hlist2Tuple7[A, B, C, D, E, F, G](v: HCons[A, HCons[B, HCons[C, HCons[D, HCons[E, HCons[F, HCons[G, HNil]]]]]]]): Tuple7[A, B, C, D, E, F, G] = {
+    val h1 = v.head
+    val t1 = v.tail
+    val h2 = t1.head
+    val t2 = t1.tail
+    val h3 = t2.head
+    val t3 = t2.tail
+    val h4 = t3.head
+    val t4 = t3.tail
+    val h5 = t4.head
+    val t5 = t4.tail
+    val h6 = t5.head
+    val t6 = t5.tail
+    val h7 = t6.head
+ 
+    Tuple7(h1, h2, h3, h4, h5, h6, h7)
+  }
 }
 
 //----------------------------------------------------------
 // HList Implementation based on Mark Harrah's Up
 // https://github.com/harrah/up
-//----------------------------------------------------------
 
 sealed trait HList
 {

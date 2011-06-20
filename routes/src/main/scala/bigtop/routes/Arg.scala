@@ -37,3 +37,15 @@ object StringArg extends Arg[String] {
     Some(urlDecode(path))
   
 }
+
+case class ConstArg(value: String) extends Arg[Unit] {
+
+  def encode(v: Unit): String = value
+  
+  def decode(path: String) = {
+    if (path == value)
+      Some(path)
+    else
+      None
+  }
+}
