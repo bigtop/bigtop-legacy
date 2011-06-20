@@ -4,7 +4,7 @@ class BigtopProject(info: ProjectInfo) extends ParentProject(info) {
 
   // Libraries ----------------------------------
 
-  val liftVersion = "2.3"
+  val liftVersion = "2.4-M1"
   
   // Lift:
   lazy val liftSquerylRecord = "net.liftweb" %% "lift-squeryl-record" % liftVersion % "compile"
@@ -15,7 +15,7 @@ class BigtopProject(info: ProjectInfo) extends ParentProject(info) {
   lazy val postgresql = "postgresql" % "postgresql" % "8.4-702.jdbc4"
 
   // Test frameworks:
-  lazy val scalatest = "org.scalatest" % "scalatest" % "1.3" % "test"
+  lazy val scalatest = "org.scalatest" % "scalatest_2.9.0" % "1.6.1" % "test"
 
   // Subprojects --------------------------------
 
