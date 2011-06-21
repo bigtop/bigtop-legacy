@@ -11,32 +11,82 @@ import net.liftweb.util.Helpers._
 
 import bigtop.core._
 
+class ReportException(msg: String) extends Exception(msg)
+
 trait Report[T] {
+
+  // URL parameter names ------------------------
   
-  // Defaults -----------------------------------
+  /** The URL parameter name for the search term. */
+  val searchTermParamName = "q"
+
+  /** The URL parameter name for the sort order. */
+  val orderParamName = "sort"
+
+  /** The URL parameter name for the index of first item to show on the report. */
+  val startParamName = "start"
+
+  /** The URL parameter name for the count of items to show on a report page. */
+  val countParamName = "count"
   
-  val defaultOrder: Option[ReportOrder] = None
-  val defaultStart: Int = 0
-  val defaultCount: Int = 25
+  // URL parameter defaults ---------------------
+  
+  /**
+  * The default item to start on if no URL parameter is specified.
+  * Unless overridden, this defaults to 0.
+  */
+  lazy val defaultStart: Int = 0
+  
+  /**
+  * The default number of items per page if no URL parameter is specified.
+  * Unless overridden, this defaults to 0.
+  */
+  lazy val defaultCount: Option[Int] = Some(25)
+
+  /**
+  * The default sort order if no URL parameter is specified.
+  * Unless overridden, this defaults to be the first column in ascending order.
+  */
+  lazy val defaultOrder: ReportOrder = ReportOrder.Asc(reportModel.reportColumns(0))
   
   // UrlVars ------------------------------------
 
-  object OrderParam extends UrlParam[Option[ReportOrder]] {
-    val paramName = "sort"
+  object OrderParam extends UrlParam[ReportOrder] {
+    val paramName = orderParamName
 
-    def encodeParam(value: Option[ReportOrder]): Box[String] =
-      if(value == defaultOrder) Empty else value.map(ord => ord.name)
-      
-    def decodeParam(param: Box[String]): Option[ReportOrder] =
-      param.flatMap(ReportOrder.fromName(_)).
-            filter(reportModel.reportOrders.contains(_)).
-            orElse(defaultOrder)
+    def encodeParam(value: ReportOrder): Box[String] =
+      if(value == defaultOrder) Empty else Full(value.param)
+    
+    def decodeParam(param: Box[String]): ReportOrder =
+      ReportOrder.fromParam(param, reportModel.reportColumns).
+                  getOrElse(defaultOrder)
   }
 
-  object searchTerm extends OptionStringUrlRequestVar("q")
+  object CountParam extends UrlParam[Option[Int]] {
+    val paramName = countParamName
+
+    def encodeParam(value: Option[Int]): Box[String] =
+      if(value == defaultCount) None else value.map(_.toString)
+    
+    def decodeParam(param: Box[String]): Option[Int] =
+      param.flatMap(s => tryo(Integer.parseInt(s))).or(defaultCount)
+  }
+
+  object searchTerm extends OptionStringUrlRequestVar(searchTermParamName)
   object order extends UrlRequestVar(OrderParam)
-  object start extends IntUrlRequestVar("start", defaultStart)
-  object count extends IntUrlRequestVar("count", defaultCount)
+  object start extends IntUrlRequestVar(startParamName, defaultStart)
+  object count extends UrlRequestVar(CountParam)
+  
+  /**
+  * The URL used to open this page.
+  * We store this in a val at snippet creation time in case we end up rewriting URLs
+  * during an AJAX call (which rewrites the /ajax_request/foo URL).
+  */
+  val reportUrl = Url.fromLift
+  
+  def rewriteUrl: Url =
+    List(searchTerm, order, start, count).
+      foldLeft(reportUrl)((url, urlVar) => urlVar.rewriteUrl(url))
 
   // Model --------------------------------------
   
@@ -55,17 +105,21 @@ trait Report[T] {
     bindPager
   
   def bindSearchField =
-    "data-report-binding=search-field" #> SHtml.ajaxText(searchTerm.is.getOrElse(""), onSearch _)
+    "data-report-binding=search-field" #>
+      SHtml.ajaxText(searchTerm.is.getOrElse(""), onSearch _, "type" -> "search")
   
   def bindSortCombo =
     "data-report-binding=sort-combo" #> SHtml.ajaxSelectObj(
-      reportModel.reportOrders.map(ord => ord -> ord.name),
-      defaultOrder,
+      reportModel.reportOrders.map(ord => ord -> sortComboLabel(ord)),
+      Some(order.is),
       onSort _)
+  
+  def sortComboLabel(ord: ReportOrder): String =
+    "Sort by " + ord.col.label + " - " + (if(ord.asc) "ascending" else "descending")
   
   def bindSortLinks =
     reportModel.reportColumns.map { col =>
-      ("data-report-binding=sort-" + col.name + " [onclick]") #> SHtml.ajaxInvoke(() => onResort(col))
+      ("data-report-binding=sort-" + col.id + " [onclick]") #> SHtml.ajaxInvoke(() => onResort(col))
     }.foldLeft("* ^^" #> "ignored")(_ & _)
   
   def bindPager = {
@@ -77,7 +131,14 @@ trait Report[T] {
     
   /** List of page indices, each of the form (itemIndex, pageIndex), e.g.: (0 -> 0) :: (5 -> 1) :: ... */
   private[report] def calcPages: List[(Int,Int)] =
-    0.until(reportModel.totalReportItems(searchTerm.is), count.is).toList.zipWithIndex 
+    count.is match {
+      case Some(count) =>
+        0.until(reportModel.totalReportItems(searchTerm.is), count).toList.zipWithIndex
+      
+      // If count is None (i.e. no paging), there's only ever one page:
+      case None =>
+        List((0, 0))
+    }
       
   def bindPagerPrev(pages: List[(Int, Int)]) =
     if(pages.length <= 1) {
@@ -119,10 +180,24 @@ trait Report[T] {
 
   // AJAX handlers ------------------------------
   
-  def onSearch(term: String): JsCmd = JsCmds.Alert("onSearch " + term)
+  def onSearch(term: String): JsCmd = {
+    searchTerm.set(term.trim match {
+      case "" => None
+      case other => Some(other)
+    })
+    JsCmds.RedirectTo(rewriteUrl.urlString)
+  }
   
-  def onSort(ord: ReportOrder): JsCmd = JsCmds.Alert("onSort " + ord.toString)
-  def onResort(col: ReportColumn): JsCmd = JsCmds.Alert("onReort " + col.toString)
+  def onSort(ord: ReportOrder): JsCmd = {
+    order.set(ord)
+    JsCmds.RedirectTo(rewriteUrl.urlString)
+  }
+  
+  def onResort(Col: ReportColumn): JsCmd =
+    onSort(order.is match {
+      case ord @ ReportOrder(Col, _) => ord.reverse
+      case other => ReportOrder.Asc(Col)
+    })
   
   def onPagerNext: JsCmd = JsCmds.Alert("onPagerNext")
   def onPagerPrev: JsCmd = JsCmds.Alert("onPagerPrev")
