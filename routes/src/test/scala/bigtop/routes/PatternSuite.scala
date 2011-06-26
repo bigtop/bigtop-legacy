@@ -6,7 +6,9 @@ import org.scalatest._
 import PatternOps._
 
 class PatternSuite extends FunSuite with Assertions {
-
+  
+  // Type-safe versions of expect()() -----------
+  
   def expectTuple[A, B](v1: Tuple1[A], v2: Tuple1[B]) =
     expect(v1)(v2)
   
@@ -15,9 +17,11 @@ class PatternSuite extends FunSuite with Assertions {
   
   def expectTuple[A,B,C](v1: Tuple3[A,B,C], v2: Tuple3[A,B,C]) =
     expect(v1)(v2)
-  
+
   def expectTuple[A,B,C,D](v1: Tuple4[A,B,C,D], v2: Tuple4[A,B,C,D]) =
     expect(v1)(v2)
+  
+  // Tests --------------------------------------
   
   test("/") {
     val p = PNil
