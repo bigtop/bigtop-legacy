@@ -20,6 +20,7 @@ sealed trait Arg[T] {
 }
 
 trait LiteralArg extends Arg[Unit]
+
 trait MatchArg[T] extends Arg[T]
 
 object IntArg extends MatchArg[Int] {
