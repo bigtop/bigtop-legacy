@@ -1,17 +1,8 @@
 package bigtop
 package routes
 
-case class PatternException(msg: String, value: Any) extends Exception(msg) {
-  override def toString: String =
-    msg + " " + value.toString
-}
-
-class UrlPattern[P <: Pattern](pList: P) {  
-  def decode(path: List[String]): Option[P#Result] = pList.decode(path)
-}
-
 /**
-* URL path patterns are represented by Pattern objects,
+* URL path patterns are represented by Path objects,
 * of which there are PCons and PNil subtypes.
 * 
 * PConses are parameterised by the type of the argument
@@ -22,7 +13,7 @@ class UrlPattern[P <: Pattern](pList: P) {
 * heterogeneous list (HList) of argument values. We convert this to a
 * tuple or argument list as appropriate.
 *
-* There are four type members in a Pattern:
+* There are four type members in a Path:
 *  - This - the type of the whole path pattern;
 *  - Head - the type of the argument being captured in this segment of the path
 *           (or Unit if we're not interested in this path segment);
@@ -30,10 +21,10 @@ class UrlPattern[P <: Pattern](pList: P) {
 *  - Result - the type of the argument list being extracted from the path
 *             (an HList of the same or lesser length than the path).
 */
-sealed trait Pattern {
-  type This <: Pattern
+sealed trait Path {
+  type This <: Path
   type Head
-  type Tail <: Pattern
+  type Tail <: Path
   type Result <: HList // The result type if this pattern matches
 
   def decode(path: List[String]): Option[Result]
@@ -46,7 +37,7 @@ sealed trait Pattern {
 * subtypes: PMatch matches a URL argument, and PLiteral matches
 * a URL segment from which we don't want to extract an argument.
 */
-abstract sealed class PCons[Hd, Tl <: Pattern](head: Arg[Hd], tail: Tl) extends Pattern {
+abstract sealed class PCons[Hd, Tl <: Path](head: Arg[Hd], tail: Tl) extends Path {
   def /:(v: LiteralArg): PLiteral[This]
   
   def /:[V](v: MatchArg[V]): PMatch[V, This]
@@ -56,7 +47,7 @@ abstract sealed class PCons[Hd, Tl <: Pattern](head: Arg[Hd], tail: Tl) extends 
 * A PCons cell representing a path fragment from which we're not
 * interested in capturing as an argument.
 */
-final case class PLiteral[Tl <: Pattern](head: LiteralArg, tail: Tl) 
+final case class PLiteral[Tl <: Path](head: LiteralArg, tail: Tl) 
            extends PCons[Unit, Tl](head, tail) {
   type This = PLiteral[Tl]
   type Head = Unit
@@ -84,7 +75,7 @@ final case class PLiteral[Tl <: Pattern](head: LiteralArg, tail: Tl)
 * argument and the process of encoding/decoding it in the path are represented
 * by the MatchArg constructor argument.
 */
-final case class PMatch[Hd, Tl <: Pattern](head: MatchArg[Hd], tail: Tl) 
+final case class PMatch[Hd, Tl <: Path](head: MatchArg[Hd], tail: Tl) 
            extends PCons[Hd, Tl](head, tail) {
   type This = PMatch[Hd, Tl]
   type Head = Arg[Hd]
@@ -114,7 +105,7 @@ final case class PMatch[Hd, Tl <: Pattern](head: MatchArg[Hd], tail: Tl)
     tail.encode(args.tail.asInstanceOf[PMatch.this.tail.Result])
 }
 
-class PNil extends Pattern {
+class PNil extends Path {
   type This = PNil
   type Head = Nothing
   type Tail = PNil
@@ -141,7 +132,7 @@ case object PNil extends PNil
 /**
 * Useful functions for converting HLists to and from tuples of various lengths.
 */
-object PatternOps {
+object PathOps {
   implicit def string2Arg(v: String):ConstArg = ConstArg(v)
 
   // implicit def hnilToUnit(v: HNil): Unit =

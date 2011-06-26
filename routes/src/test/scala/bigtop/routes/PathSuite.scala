@@ -3,9 +3,9 @@ package routes
 
 import org.scalatest._
 
-import PatternOps._
+import PathOps._
 
-class PatternSuite extends FunSuite with Assertions {
+class PathSuite extends FunSuite with Assertions {
   
   // Type-safe versions of expect()() -----------
   
