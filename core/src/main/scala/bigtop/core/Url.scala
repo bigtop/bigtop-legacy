@@ -73,24 +73,21 @@ case class Url(
       ""
     }) +
     (if(pathAbsolute && !path.isEmpty) "/" else "") +
-    path.map(urlEncode(_)).mkString("/") +
+    path.map(Url.urlEncode(_)).mkString("/") +
     (if(query.isEmpty) "" else "?" + (query.map(queryEncode _)).mkString(pathSeparator)) +
-    fragment.map("#" + urlEncode(_)).getOrElse("")
-  
-  def urlEncode(str: String): String =
-    URLEncoder.encode(str, "utf-8")
+    fragment.map("#" + Url.urlEncode(_)).getOrElse("")
   
   def userInfoEncode(info: String): String = {
     val pos = info.indexOf(":")
     if(pos < 0) {
-      urlEncode(info)
+      Url.urlEncode(info)
     } else {
-      urlEncode(info.substring(0, pos)) + ":" + urlEncode(info.substring(pos + 1))
+      Url.urlEncode(info.substring(0, pos)) + ":" + Url.urlEncode(info.substring(pos + 1))
     }
   }
   
   def queryEncode(pair: (String, String)): String =
-    urlEncode(pair._1) + "=" + urlEncode(pair._2)
+    Url.urlEncode(pair._1) + "=" + Url.urlEncode(pair._2)
   
 }
 
@@ -162,6 +159,9 @@ object Url {
   
   def urlDecode(str: String): String =
     URLDecoder.decode(str, "utf-8")
+  
+  def urlEncode(str: String): String =
+    URLEncoder.encode(str, "utf-8")
   
   def userInfoDecode(info: String): String = {
     val pos = info.indexOf(":")
