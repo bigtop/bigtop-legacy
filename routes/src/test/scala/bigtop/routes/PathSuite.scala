@@ -3,7 +3,7 @@ package routes
 
 import org.scalatest._
 
-import PathOps._
+import HListOps._
 
 class PathSuite extends FunSuite with Assertions {
   
