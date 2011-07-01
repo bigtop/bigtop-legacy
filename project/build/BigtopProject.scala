@@ -4,6 +4,11 @@ import sbt._
 //     https://github.com/lift/superbuild
 class BigtopProject(info: ProjectInfo) extends ParentProject(info) {
 
+  // Disable dependencies on sub-projects:
+  override def deliverProjectDependencies = Nil
+
+  val untypedRepo = "Untyped Public Repo" at "http://repo.untyped.com"
+
   // Libraries ----------------------------------
 
   val liftVersion = "2.4-M2"
