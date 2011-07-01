@@ -1,5 +1,7 @@
 import sbt._
 
+// A lot of the idioms in this code respectfully stolen form Lift superbuild:
+//     https://github.com/lift/superbuild
 class BigtopProject(info: ProjectInfo) extends ParentProject(info) {
 
   // Libraries ----------------------------------
@@ -32,6 +34,8 @@ class BigtopProject(info: ProjectInfo) extends ParentProject(info) {
   lazy val mongodb = bigtopProject("mongodb", liftCommon, liftWebkit, liftMongodb, liftMongodbRecord, rogue, scalatest)(debug, core)
   lazy val util = bigtopProject("util", liftCommon, liftWebkit, scalatest)(debug, core)
   
+  lazy val doc = project(".", "doc", new BigtopDocProject(_))
+  
   // Helpers ------------------------------------
 
   val untypedResolver = {
@@ -61,6 +65,48 @@ class BigtopProject(info: ProjectInfo) extends ParentProject(info) {
     override def packageToPublishActions =
       super.packageToPublishActions ++ Seq(packageSrc)
 
+  }
+  
+  class BigtopDocProject(info: ProjectInfo) extends DefaultProject(info) {
+    
+    /** Sibling of this project, that is, other BigtopSubprojects having the same parent. */
+    lazy val siblings =
+      info.parent.get.projectClosure.flatMap {
+        case c: BigtopSubproject => Some(c)
+        case _                   => None
+      }
+
+    // We modify the parameter that docAction and docTestAction takes instead of modifying the action itself
+    override def mainSources  = concatPaths(siblings) { case p: ScalaPaths        => p.mainSources }
+    override def testSources  = concatPaths(siblings) { case p: ScalaPaths        => p.testSources }
+    override def docClasspath = concatPaths(siblings) { case p: BasicScalaProject => p.docClasspath }
+
+    private def concatPaths[T](s: Seq[T])(f: PartialFunction[T, PathFinder]) = {
+      def finder: T => PathFinder = f orElse { case _ => Path.emptyPathFinder }
+      (Path.emptyPathFinder /: s) { _ +++ finder(_) }
+    }
+
+    // Nothing to compile, package, deliver or publish
+    override def compileAction        = Empty
+    override def testCompileAction    = Empty
+
+    override def packageAction        = Empty
+    override def packageTestAction    = Empty
+    override def packageSrcAction     = Empty
+    override def packageTestSrcAction = Empty
+
+    override def publishLocalAction   = Empty
+    override def deliverLocalAction   = Empty
+
+    override def deliverAction        = Empty
+    override def publishAction        = Empty
+
+    override def makePomAction        = Empty
+
+    // To avoid write collisions with outputDirectories of parent
+    override def outputRootPath        = super.outputRootPath        / "apidoc"
+    override def managedDependencyPath = super.managedDependencyPath / "apidoc"
+   
   }
 
 }
