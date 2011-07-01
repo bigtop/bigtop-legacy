@@ -54,8 +54,10 @@ trait IdRecord[T <: IdRecord[T]] extends Record[T] with KeyedRecord[Long] {
 trait IdRecordMeta[T <: IdRecord[T]] extends MetaRecord[T] {
   self: T =>
     
-  def byId(id: Long): Query[T] = table.where(_.idField === id)
+  def byId(id: Long): Query[T] =
+    table.where(_.idField === id)
   
-  def all: Query[T] = table.where(_ => true)
+  def all: Query[T] =
+    table
   
 }
