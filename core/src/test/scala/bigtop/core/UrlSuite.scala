@@ -3,16 +3,14 @@ package core
 
 import org.scalatest._
 
+import java.net._
+
 class UrlSuite extends FunSuite with Assertions {
   
   def testUrl(urlString: String)(urlStruct: Url) = {
     test("encode/decode " + urlString) {
       expect(urlString)(urlStruct.urlString)
       expect(Some(urlStruct))(Url.fromString(urlString))
-      
-      urlStruct.toJavaURL.foreach { javaURL =>
-        expect(urlStruct)(Url.fromJavaURL(javaURL))
-      }
     }
   }
   
@@ -166,6 +164,11 @@ class UrlSuite extends FunSuite with Assertions {
     
     assert(abs2.host(Some("example.com")).pathAbsolute === true)
     assert(rel2.host(Some("example.com")).pathAbsolute === true)
+  }
+  
+  test("toURL") {
+    expect(new URL("http://www.untyped.com"))(Url("http://www.untyped.com").toURL)
+    intercept[MalformedURLException](Url("/a/b/c").toURL)
   }
   
 }

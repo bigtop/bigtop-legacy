@@ -50,12 +50,8 @@ case class Url(
   def fragment(newFragment: Option[String]): Url =
     copy(fragment = newFragment)
   
-  def toJavaURL: Option[URL] =
-    try {
-      Some(new URL(toString))
-    } catch {
-      case exn: MalformedURLException => None
-    }
+  def toURL: URL =
+    new URL(urlString)
   
   // URL serialization code stolen from net/url in Racket:
   
