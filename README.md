@@ -46,3 +46,9 @@ Browse the [Maven] repository to find the latest versions and the applicable ver
 [Github]: https://github.com/bigtop/bigtop
 [Maven]: http://repo.untyped.com/bigtop
 
+License
+-------
+
+Bigtop is copyright Untyped Ltd and released under the Apache 2.0 License.
+
+See the `LICENSE` file for the full license text.
