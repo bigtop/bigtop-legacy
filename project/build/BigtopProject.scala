@@ -108,7 +108,12 @@ class BigtopProject(info: ProjectInfo) extends ParentProject(info) {
     override def deliverLocalAction   = Empty
 
     override def deliverAction        = Empty
-    override def publishAction        = Empty
+    override def publishAction        =
+      task {
+        val src = outputPath / "doc" / "main" / "api"
+        val cmd = "scp -r " + src.absolutePath + " api.bigtopweb.com:api.bigtopweb.com/public/htdocs/" + projectVersion.value
+        cmd !
+      }
 
     override def makePomAction        = Empty
 
