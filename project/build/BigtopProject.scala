@@ -15,6 +15,7 @@
  */
 
 import sbt._
+import sbt.Process._
 
 // A lot of the idioms in this code respectfully stolen form Lift superbuild:
 //     https://github.com/lift/superbuild
@@ -128,7 +129,8 @@ class BigtopProject(info: ProjectInfo) extends ParentProject(info) {
       task {
         val src = outputPath / "doc" / "main" / "api"
         val cmd = "scp -r " + src.absolutePath + " api.bigtopweb.com:api.bigtopweb.com/public/htdocs/" + projectVersion.value
-        cmd !
+        cmd ! log
+        None
       }
 
     override def makePomAction        = Empty
