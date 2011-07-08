@@ -40,6 +40,7 @@ class BigtopProject(info: ProjectInfo) extends ParentProject(info) {
   lazy val liftTestkit = "net.liftweb" %% "lift-testkit" % liftVersion % "test"
   lazy val liftWebkit = "net.liftweb" %% "lift-webkit" % liftVersion % "compile"
   lazy val jettyTest = "org.mortbay.jetty" % "jetty" % "6.1.22" % "test"
+  lazy val c3p0 = "c3p0" % "c3p0" % "0.9.1.2"
 
   // Databases:
   lazy val postgresql = "postgresql" % "postgresql" % "8.4-702.jdbc4"
@@ -56,7 +57,7 @@ class BigtopProject(info: ProjectInfo) extends ParentProject(info) {
   lazy val core = bigtopProject("core", liftCommon, liftWebkit, scalatest, liftTestkit, jettyTest)()
   lazy val debug = bigtopProject("debug", liftCommon, liftWebkit, scalatest)()
   lazy val report = bigtopProject("report", liftCommon, liftWebkit, scalatest)(debug, core)
-  lazy val squeryl = bigtopProject("squeryl", liftCommon, liftWebkit, liftSquerylRecord, postgresql, scalatest)(debug, core)
+  lazy val squeryl = bigtopProject("squeryl", liftCommon, liftWebkit, liftSquerylRecord, postgresql, c3p0, scalatest)(debug, core)
   lazy val mongodb = bigtopProject("mongodb", liftCommon, liftWebkit, liftMongodb, liftMongodbRecord, rogue, scalatest)(debug, core)
   lazy val util = bigtopProject("util", liftCommon, liftWebkit, scalatest)(debug, core)
   

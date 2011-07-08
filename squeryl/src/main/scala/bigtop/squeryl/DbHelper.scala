@@ -17,9 +17,13 @@
 package bigtop
 package squeryl
 
+import java.sql.{DriverManager,Driver}
+import com.mchange.v2.c3p0.ComboPooledDataSource
+
 import net.liftweb.common.{Box,Full,Empty}
 import net.liftweb.db._
 import net.liftweb.http.S
+import net.liftweb.util.LoanWrapper
 import net.liftweb.squerylrecord.SquerylRecord
 import net.liftweb.squerylrecord.RecordTypeMode._
 
@@ -35,24 +39,46 @@ trait DbHelper {
   val schema: DbSchema
   
   val driver = "org.postgresql.Driver"
+  
   val host = "localhost"
   val database: String
-  val username: Box[String]
-  val password: Box[String]
+  val username: Option[String]
+  val password: Option[String]
   
-  def url = "jdbc:postgresql://" + host + "/" + database
-
-  val adapter: DatabaseAdapter = new PostgreSqlAdapter
+  def url =
+    "jdbc:postgresql://" + host + "/" + database
   
-  var withDb = DB.buildLoanWrapper
+  lazy val pool = {
+    val pool = new ComboPooledDataSource
+    pool.setDriverClass(driver)
+    pool.setJdbcUrl(url)
+    pool.setUser(username.getOrElse(""))
+    pool.setPassword(password.getOrElse(""))
+    pool.setMinPoolSize(5)
+    pool.setAcquireIncrement(5)
+    pool.setMaxPoolSize(20)
+	  pool
+  }
+  
+  def createConnection =
+    pool.getConnection
+  
+  val adapter: DatabaseAdapter =
+    new PostgreSqlAdapter
+  
+  var withDb =
+    new LoanWrapper {
+      def apply[T](fn: => T): T =
+        inTransaction(fn)
+    }
   
   def init: Unit = {
     if(!initialised) {
-      val manager = new StandardDBVendor(driver, url, username, password)
-      
-      DB.defineConnectionManager(DefaultConnectionIdentifier, manager)
-    
-      SquerylRecord.init(() => adapter)
+      SquerylRecord.initWithSquerylSession {
+        val session = Session.create(createConnection, adapter)
+        println("Session started " + session)
+        session
+      }
 
       S.addAround(withDb)
       

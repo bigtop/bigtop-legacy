@@ -26,5 +26,8 @@ class BaseSuite extends FunSuite with BeforeAndAfterAll with BeforeAndAfterEach 
 
   override def beforeEach(): Unit =
     TestDb.dropAndRecreateDatabase
+  
+  override def test (testName: String, testTags: Tag*)(testFun: => Unit): Unit =
+    super.test(testName, testTags: _*)(TestDb.withDb(testFun))
 
 }

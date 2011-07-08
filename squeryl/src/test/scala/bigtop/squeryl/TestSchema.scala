@@ -17,6 +17,7 @@
 package bigtop
 package squeryl
 
+import java.sql.DriverManager
 import net.liftweb.common._
 import net.liftweb.record._
 import net.liftweb.record.field._
@@ -28,19 +29,20 @@ import org.squeryl.adapters.H2Adapter
 // Database -------------------------------------
 
 object TestDb extends DbHelper {
-  
+
   lazy val schema = TestSchema
-
+  
   override val driver = "org.h2.Driver"
-
-  val database = "squeryltestdb"
-  val username = Full("")
-  val password = Full("")
-
-  override def url = "jdbc:h2:mem:" + database
+  
+  val database = "bigtoptestdb"
+  val username = None
+  val password = None
+  
+  override def url =
+    "jdbc:h2:mem:" + database + ";DB_CLOSE_DELAY=-1"
   
   override val adapter = new H2Adapter
-  
+
 }
 
 // Schema ---------------------------------------
