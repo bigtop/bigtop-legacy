@@ -8,24 +8,24 @@ import net.liftweb.http._
 
 trait Site extends HListOps with ArgOps with Function1[Req, Box[LiftResponse]] {
 
-  var routes: HList = HNil
+  var routes: List[Route[_]] = Nil
   
   def add[T <: HList](route: Route[T]): Route[T] = {
-    routes = HCons(route, routes)
+    routes = routes :+ route
     route
   }
   
-  def apply(req: Req): Box[LiftResponse] = Empty
-//    dispatch(req, routes)
+  def apply(req: Req): Box[LiftResponse] = 
+    dispatch(req, routes)
   
-  // def dispatch(req: Req, routes: HList): Box[LiftResponse] =
-  //   routes match {
-  //     case HNil => Empty
+  def dispatch(req: Req, routes: List[Route[_]]): Box[LiftResponse] =
+    routes match {
+      case Nil => Empty
       
-  //     case HCons(head, tail) =>
-  //       head(req) match {
-  //         case Empty => dispatch(req, tail)
-  //         case other => other
-  //       }
-  //   }
+      case head :: tail =>
+        head(req) match {
+          case Empty => dispatch(req, tail)
+          case other => other
+        }
+    }
 }
