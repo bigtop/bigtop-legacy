@@ -58,3 +58,9 @@ case class ConstArg(value: String) extends LiteralArg {
       None
   }
 }
+
+trait ArgOps {
+  implicit def stringToArg(v: String): LiteralArg = ConstArg(v)
+}
+
+object ArgOps extends ArgOps

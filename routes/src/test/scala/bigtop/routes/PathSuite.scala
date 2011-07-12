@@ -4,6 +4,7 @@ package routes
 import org.scalatest._
 
 import HListOps._
+import ArgOps._
 
 class PathSuite extends FunSuite with Assertions {
   
@@ -124,5 +125,4 @@ class PathSuite extends FunSuite with Assertions {
 
     expect(List("123", "456", "789", "012"))(p encode (123, "456", 789, "012"))
   }
-  
 }

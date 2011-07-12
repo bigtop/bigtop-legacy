@@ -6,8 +6,8 @@ import scala.collection._
 import net.liftweb.common._
 import net.liftweb.http._
 
-trait Site extends HListOps with Function1[Req, Box[LiftResponse]] {
-  
+trait Site extends HListOps with ArgOps with RouteOps with Function1[Req, Box[LiftResponse]] {
+
   var routes: List[Route] = Nil
   
   def add(route: Route): Route = {
@@ -28,5 +28,5 @@ trait Site extends HListOps with Function1[Req, Box[LiftResponse]] {
           case other => other
         }
     }
-  
+
 }

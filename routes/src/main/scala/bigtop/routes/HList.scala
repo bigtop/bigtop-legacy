@@ -31,9 +31,6 @@ trait HListFunction[A <: HList, R] extends Function1[A, R] {
 
 trait HListOps {
   
-  implicit def string2Arg(v: String) =
-    ConstArg(v)
-
   // Tuples to HLists ---------------------------
   
   implicit def hlistToTuple1[A](v: HCons[A, HNil]): Tuple1[A] =
@@ -139,10 +136,8 @@ trait HListOps {
     HCons(t._1, HCons(t._2, HCons(t._3, HCons(t._4, HCons(t._5, HCons(t._6, HCons(t._7, HNil)))))))
 
   implicit def function0ToHListFunction[Result](fn: () => Result) = {
-    type ArgList = HNil
-    
-    new HListFunction[ArgList, Result] {
-      def apply(in: ArgList): Result = {
+    new HListFunction[HNil, Result] {
+      def apply(in: HNil): Result = {
         fn()
       }
     }
@@ -151,10 +146,8 @@ trait HListOps {
   // Functions to HList functions ---------------
   
   implicit def function1ToHListFunction[A, Result](fn: (A) => Result) = {
-    type ArgList = HCons[A, HNil]
-    
-    new HListFunction[ArgList, Result] {
-      def apply(in: ArgList): Result = {
+    new HListFunction[HCons[A, HNil], Result] {
+      def apply(in: HCons[A, HNil]): Result = {
         val h1 = in.head
         
         fn(h1)
@@ -163,10 +156,8 @@ trait HListOps {
   }
   
   implicit def function2ToHListFunction[A, B, Result](fn: (A, B) => Result) = {
-    type ArgList = HCons[A, HCons[B, HNil]]
-    
-    new HListFunction[ArgList, Result] {
-      def apply(in: ArgList): Result = {
+    new HListFunction[HCons[A, HCons[B, HNil]], Result] {
+      def apply(in: HCons[A, HCons[B, HNil]]): Result = {
         val h1 = in.head
         val t1 = in.tail
         val h2 = t1.head
@@ -177,10 +168,8 @@ trait HListOps {
   }
   
   implicit def function3ToHListFunction[A, B, C, Result](fn: (A, B, C) => Result) = {
-    type ArgList = HCons[A, HCons[B, HCons[C, HNil]]]
-    
-    new HListFunction[ArgList, Result] {
-      def apply(in: ArgList): Result = {
+    new HListFunction[HCons[A, HCons[B, HCons[C, HNil]]], Result] {
+      def apply(in: HCons[A, HCons[B, HCons[C, HNil]]]): Result = {
         val h1 = in.head
         val t1 = in.tail
         val h2 = t1.head
@@ -193,10 +182,8 @@ trait HListOps {
   }
   
   implicit def function4ToHListFunction[A, B, C, D, Result](fn: (A, B, C, D) => Result) = {
-    type ArgList = HCons[A, HCons[B, HCons[C, HCons[D, HNil]]]]
-    
-    new HListFunction[ArgList, Result] {
-      def apply(in: ArgList): Result = {
+    new HListFunction[HCons[A, HCons[B, HCons[C, HCons[D, HNil]]]], Result] {
+      def apply(in: HCons[A, HCons[B, HCons[C, HCons[D, HNil]]]]): Result = {
         val h1 = in.head
         val t1 = in.tail
         val h2 = t1.head
@@ -211,10 +198,8 @@ trait HListOps {
   }
   
   implicit def function5ToHListFunction[A, B, C, D, E, Result](fn: (A, B, C, D, E) => Result) = {
-    type ArgList = HCons[A, HCons[B, HCons[C, HCons[D, HCons[E, HNil]]]]]
-    
-    new HListFunction[ArgList, Result] {
-      def apply(in: ArgList): Result = {
+    new HListFunction[HCons[A, HCons[B, HCons[C, HCons[D, HCons[E, HNil]]]]], Result] {
+      def apply(in: HCons[A, HCons[B, HCons[C, HCons[D, HCons[E, HNil]]]]]): Result = {
         val h1 = in.head
         val t1 = in.tail
         val h2 = t1.head
@@ -231,10 +216,8 @@ trait HListOps {
   }
   
   implicit def function6ToHListFunction[A, B, C, D, E, F, Result](fn: (A, B, C, D, E, F) => Result) = {
-    type ArgList = HCons[A, HCons[B, HCons[C, HCons[D, HCons[E, HCons[F, HNil]]]]]]
-    
-    new HListFunction[ArgList, Result] {
-      def apply(in: ArgList): Result = {
+    new HListFunction[HCons[A, HCons[B, HCons[C, HCons[D, HCons[E, HCons[F, HNil]]]]]], Result] {
+      def apply(in: HCons[A, HCons[B, HCons[C, HCons[D, HCons[E, HCons[F, HNil]]]]]]): Result = {
         val h1 = in.head
         val t1 = in.tail
         val h2 = t1.head
@@ -253,10 +236,8 @@ trait HListOps {
   }
   
   implicit def function7ToHListFunction[A, B, C, D, E, F, G, Result](fn: (A, B, C, D, E, F, G) => Result) = {
-    type ArgList = HCons[A, HCons[B, HCons[C, HCons[D, HCons[E, HCons[F, HCons[G, HNil]]]]]]]
-    
-    new HListFunction[ArgList, Result] {
-      def apply(in: ArgList): Result = {
+    new HListFunction[HCons[A, HCons[B, HCons[C, HCons[D, HCons[E, HCons[F, HCons[G, HNil]]]]]]], Result] {
+      def apply(in: HCons[A, HCons[B, HCons[C, HCons[D, HCons[E, HCons[F, HCons[G, HNil]]]]]]]): Result = {
         val h1 = in.head
         val t1 = in.tail
         val h2 = t1.head
