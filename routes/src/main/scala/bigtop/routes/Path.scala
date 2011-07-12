@@ -34,11 +34,13 @@ sealed trait Path {
   
   def encode(args: Result): List[String]
   
-  // def >>(fn: HListFunction[Result, Box[LiftResponse]]): Route =
-  //   new Route {
-  //     def apply(in: Req): Box[LiftResponse] =
-  //       Box.option2Box(decode(in.path.partPath)).flatMap(fn)
-  //   }
+  def >>(fn: HListFunction[Result, Box[LiftResponse]]): Route[Result] =
+    new Route[Result] {
+      def apply(in: Req): Box[LiftResponse] =
+        decode(in.path.partPath).map(fn(_)).getOrElse(Empty)
+
+      def url(args: Result): String = encode(args).mkString("/", "/", "")
+    }
 }
 
 /**

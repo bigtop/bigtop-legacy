@@ -8,7 +8,6 @@ class RouteSuite extends FunSuite with Assertions {
 
   import HListOps._
   import ArgOps._
-  import RouteOps._
 
   test("Route construction with varying implicits type checks") {
     "foo" /: "bar" /: PNil >> (() => Empty)
