@@ -36,14 +36,21 @@ trait DbHelper {
   
   var initialised = false
   
-  val schema: DbSchema
-  
   val driver = "org.postgresql.Driver"
   
   val host = "localhost"
   val database: String
   val username: Option[String]
   val password: Option[String]
+
+  /**
+   * Reference to the schema stored in this database.
+   * *Must* be declared as lazily evaluated value (i.e. a method or a lazy val).
+   * 
+   * If you declare this field with a regular val, you get a PrimitiveTypeMode
+   * vs RecordTypeMode exception at initialisation time.
+   */
+  def schema: DbSchema
   
   def url =
     "jdbc:postgresql://" + host + "/" + database
@@ -66,7 +73,7 @@ trait DbHelper {
   val adapter: DatabaseAdapter =
     new PostgreSqlAdapter
   
-  var withDb =
+  val withDb =
     new LoanWrapper {
       def apply[T](fn: => T): T =
         inTransaction(fn)
@@ -85,6 +92,8 @@ trait DbHelper {
       initialised = true
     }
   }
+  
+  // Handy drop-and-recreate functionality ------
   
   def dropAndRecreateDatabase: Unit = {
     init
