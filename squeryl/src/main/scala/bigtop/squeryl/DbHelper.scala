@@ -32,7 +32,7 @@ import org.squeryl.internals.DatabaseAdapter
 import org.squeryl.adapters.PostgreSqlAdapter
 
 /** Create a singleton DbHelper to provide easy command-line access to your DB. */
-trait DbHelper {
+trait DbHelper extends net.liftweb.common.Loggable {
   
   var initialised = false
   
@@ -75,21 +75,31 @@ trait DbHelper {
   
   val withDb =
     new LoanWrapper {
-      def apply[T](fn: => T): T =
-        inTransaction(fn)
+      def apply[T](fn: => T): T = {
+        try {
+          logger.debug("bigtop.squeryl.DbHelper.withDb starting")
+          inTransaction(fn)
+        } finally {
+          logger.debug("bigtop.squeryl.DbHelper.withDb finished")
+        }
+      }
     }
   
   def init: Unit = {
     if(!initialised) {
-      SquerylRecord.initWithSquerylSession {
-        val session = Session.create(createConnection, adapter)
-        println("Session started " + session)
-        session
-      }
+      try {
+        logger.debug("bigtop.squeryl.DbHelper.init starting")
+        SquerylRecord.initWithSquerylSession {
+          val session = Session.create(createConnection, adapter)
+          session
+        }
 
-      S.addAround(withDb)
+        S.addAround(withDb)
       
-      initialised = true
+        initialised = true
+      } finally {
+        logger.debug("bigtop.squeryl.DbHelper.init finished")
+      }
     }
   }
   
