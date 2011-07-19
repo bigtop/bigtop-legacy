@@ -57,7 +57,7 @@ class IdRecordSuite extends BaseSuite {
     // Return value of delete is the exact same struct:
     assert(project1 eq project2)
 
-    // ID set to 0, database ends up empty:
+    // Database ends up empty:
     expect(false)(project1.isPersisted)
     expect(None)(Project.byUuid("foo").get)
   }

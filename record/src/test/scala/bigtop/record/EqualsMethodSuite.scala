@@ -15,7 +15,30 @@
  */
 
 package bigtop
-package squeryl
+package record
 
-/** Mix this into a Field to prevent it being compared in IdRecord.equals() */
-trait IgnoreInEquals
+import net.liftweb.record._
+import net.liftweb.record.field._
+
+import org.scalatest._
+
+// Tests ----------------------------------------
+
+// Removed for now - see comments in EqualsHelper.scala for reasons:
+// 
+// class EqualsHelperSuite extends FunSuite with Assertions {
+//   
+//   test("equals, dataEquals") {
+//     val p1 = User.createRecord.id(1).name("abc")
+//     val p2 = User.createRecord.id(1).name("abc")
+// 
+//     assert(p1 === p2)
+//     assert(p1 dataEquals p2)
+//     
+//     p2.id(2)
+//     
+//     assert(p1 != p2)
+//     assert(p1 dataEquals p2)
+//   }
+//  
+// }

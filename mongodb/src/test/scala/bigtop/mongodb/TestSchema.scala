@@ -22,13 +22,15 @@ import net.liftweb.record._
 import net.liftweb.record.field._
 import net.liftweb.util._
 
+import bigtop.record._
+
 // Database -------------------------------------
 
 object TestDb extends DbHelper {
   
   lazy val schema = TestSchema
 
-  val database = "mongodbtestdb"
+  val database = "bigtopmongodbtestdb"
 
 }
 
@@ -41,6 +43,10 @@ object TestSchema extends DbSchema
 class User private() extends IdRecord[User] with BaseUser[User] {
   def meta = User
   def schema = TestSchema
+  
+  val superuser = new BooleanField(this)
+  
+  override def canChangeIdentity = superuser.is
 }
 
 object User extends User with IdRecordMeta[User] with BaseUserMeta[User]

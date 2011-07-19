@@ -26,7 +26,7 @@ import net.liftweb.record.field.PasswordField
 import com.foursquare.rogue._
 import com.foursquare.rogue.Rogue._
 
-import bigtop.debug.ConsoleDebug._
+import bigtop.record._
 
 /** Mix this into a MongoRecord to get a primary key, and save, delete, and equals methods. */
 trait IdRecord[T <: IdRecord[T]] extends MongoRecord[T] with MongoId[T] {
@@ -45,7 +45,7 @@ trait IdRecord[T <: IdRecord[T]] extends MongoRecord[T] with MongoId[T] {
   }
   
   lazy val comparableFields = 
-    allFields.filter(field => !field.isInstanceOf[PasswordField[_]] && 
+    allFields.filter(field => !field.isInstanceOf[net.liftweb.record.field.PasswordField[_]] && 
                               !field.isInstanceOf[IgnoreInEquals])
   
   lazy val comparableDataFields = 
@@ -64,7 +64,7 @@ trait IdRecord[T <: IdRecord[T]] extends MongoRecord[T] with MongoId[T] {
   
   def dataEquals(that: T) = 
     fieldsEqual(_.comparableDataFields)(that)
-  
+
 }
 
 /** Mix this into a MongoMetaRecord to provide extra IdRecord-oriented queries. */

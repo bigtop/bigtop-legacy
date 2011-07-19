@@ -15,7 +15,7 @@
  */
 
 package bigtop
-package mongodb
+package record
 
-/** Mix this into a Field to prevent it being compared in IdRecord.equals() */
+/** Mix this into a Field to prevent it being compared in bigtop.{squeryl,mongodb}.IdRecord.equals() */
 trait IgnoreInEquals

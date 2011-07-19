@@ -26,6 +26,8 @@ import net.liftweb.util._
 
 import org.squeryl.adapters.H2Adapter
 
+import bigtop.record._
+
 // Database -------------------------------------
 
 object TestDb extends DbHelper {
@@ -57,6 +59,10 @@ object TestSchema extends DbSchema {
 class User private() extends IdRecord[User] with BaseUser[User] {
   def meta = User
   def table = TestSchema.users
+  
+  val superuser = new BooleanField(this)
+  
+  override def canChangeIdentity = superuser.is
 }
 
 object User extends User with IdRecordMeta[User] with BaseUserMeta[User]

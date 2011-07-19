@@ -26,6 +26,8 @@ import org.squeryl.Table
 import org.squeryl.Query
 import org.squeryl.annotations.Column
 
+import bigtop.record._
+
 /** Mix this into a Record to get a primary key, and save, delete, and equals methods. */
 trait IdRecord[T <: IdRecord[T]] extends Record[T] with KeyedRecord[Long] {
   self: T =>
@@ -44,7 +46,7 @@ trait IdRecord[T <: IdRecord[T]] extends Record[T] with KeyedRecord[Long] {
   }
   
   lazy val comparableFields = 
-    allFields.filter(field => !field.isInstanceOf[PasswordField[_]] && 
+    allFields.filter(field => !field.isInstanceOf[net.liftweb.record.field.PasswordField[_]] && 
                               !field.isInstanceOf[IgnoreInEquals])
   
   lazy val comparableDataFields = 
@@ -63,7 +65,7 @@ trait IdRecord[T <: IdRecord[T]] extends Record[T] with KeyedRecord[Long] {
   
   def dataEquals(that: T) = 
     fieldsEqual(_.comparableDataFields)(that)
-
+  
 }
 
 /** Mix this into a MetaRecord to provide extra IdRecord-oriented queries. */

@@ -44,6 +44,14 @@ class BaseUserSuite extends BaseSuite {
     expect(false)(user2.password.match_?("password"))
   }
   
+  test("password is same after serialisation") {
+    val user1 = User.createRecord.username("dave").password("password")
+    val hash = user1.password.is
+    user1.save
+
+    expect(hash){ User.byUsername("dave").get.password.is }
+  }
+
   test("byUsernameAndPassword") {
     S.initIfUninitted(session) {
       val user1 = User.createRecord.
@@ -52,10 +60,39 @@ class BaseUserSuite extends BaseSuite {
                        password("password").
                        save
     
-      expect(Some(user1))(User.byUsername("dave").headOption)
-      expect(Some(user1))(User.byUsernameAndPassword("dave", "password").headOption)
-      expect(None)(User.byUsernameAndPassword("dave@dave.com", "password").headOption)
-      expect(None)(User.byUsernameAndPassword("dave", "passwork").headOption)
+      expect(Some(user1))(User.byUsername("dave"))
+      expect(Some(user1))(User.byUsernameAndPassword("dave", "password"))
+      expect(None)(User.byUsernameAndPassword("dave@dave.com", "password"))
+      expect(None)(User.byUsernameAndPassword("dave", "passwork"))
+    }
+  }
+  
+  test("byEmailVerificationCode") {
+    S.initIfUninitted(session) {
+      val user1 = User.createRecord.
+                       username("dave").
+                       email("dave@dave.com").
+                       password("password").
+                       emailVerificationCode("abc").
+                       save
+
+      val user2 = User.createRecord.
+                       username("noel").
+                       email("noel@noel.com").
+                       password("password").
+                       emailVerificationCode("def").
+                       emailVerified(true).
+                       save
+
+      val user3 = User.createRecord.
+                       username("laura").
+                       email("laura@laura.com").
+                       password("password").
+                       save
+    
+      expect(Some(user1))(User.byEmailVerificationCode("abc"))
+      expect(Some(user2))(User.byEmailVerificationCode("def"))
+      expect(None)(User.byEmailVerificationCode(""))
     }
   }
   
@@ -88,30 +125,50 @@ class BaseUserSuite extends BaseSuite {
                        username("dave").
                        email("dave@dave.com").
                        password("password").
+                       superuser(true).
                        save
       val user2 = User.createRecord.
                        username("noel").
                        email("noel@noel.com").
                        password("password").
+                       superuser(false).
                        save
 
       expectLoggedOut
     
+      // Log in as superuser and change identity - change succeeds:
+    
       User.logIn(user1)
-      User.changeIdentity(user2)
+      expect(true)(User.changeIdentity(user2))
     
       expect(Full(user1.username.is))(User.realUsername)
       expect(Full(user1))(User.realUser)
       expect(Full(user2.username.is))(User.effectiveUsername)
       expect(Full(user2))(User.effectiveUser)
-    
-      User.restoreIdentity
+      
+      // User.restoreIdentity would work, but we want to check that changeIdentity
+      // is checking the real user's permissions, not the effective ones:
+      User.changeIdentity(user1)
       
       expect(Full(user1.username.is))(User.realUsername)
       expect(Full(user1))(User.realUser)
       expect(Full(user1.username.is))(User.effectiveUsername)
       expect(Full(user1))(User.effectiveUser)
 
+      User.logOut
+    
+      expectLoggedOut
+      
+      // Log in as non-superuser and change identity - change fails:
+    
+      User.logIn(user2)
+      expect(false)(User.changeIdentity(user1))
+      
+      expect(Full(user2.username.is))(User.realUsername)
+      expect(Full(user2))(User.realUser)
+      expect(Full(user2.username.is))(User.effectiveUsername)
+      expect(Full(user2))(User.effectiveUser)
+      
       User.logOut
     
       expectLoggedOut

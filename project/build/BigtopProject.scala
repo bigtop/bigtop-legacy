@@ -17,7 +17,7 @@
 import sbt._
 import sbt.Process._
 
-// A lot of the idioms in this code respectfully stolen form Lift superbuild:
+// A lot of the idioms in this code respectfully stolen from Lift superbuild:
 //     https://github.com/lift/superbuild
 class BigtopProject(info: ProjectInfo) extends ParentProject(info) {
 
@@ -29,23 +29,26 @@ class BigtopProject(info: ProjectInfo) extends ParentProject(info) {
   // Libraries ----------------------------------
 
   val liftVersion = "2.4-M2"
+  
   val rogueVersion = "1.0.14-LIFT-2.4-M2"
   
-  // Lift:
-  lazy val rogue = "com.foursquare" %% "rogue" % rogueVersion withSources()
+  lazy val bcrypt = "org.mindrot" % "jbcrypt" % "0.3m"
+  lazy val c3p0 = "c3p0" % "c3p0" % "0.9.1.2"
+  lazy val jettyTest = "org.mortbay.jetty" % "jetty" % "6.1.22" % "test"
   lazy val liftCommon = "net.liftweb" %% "lift-common" % liftVersion % "compile"
   lazy val liftMongodb = "net.liftweb" %% "lift-mongodb" % liftVersion % "compile"
   lazy val liftMongodbRecord = "net.liftweb" %% "lift-mongodb-record" % liftVersion % "compile"
+  lazy val liftRecord = "net.liftweb" %% "lift-record" % liftVersion % "compile"
   lazy val liftSquerylRecord = "net.liftweb" %% "lift-squeryl-record" % liftVersion % "compile"
   lazy val liftTestkit = "net.liftweb" %% "lift-testkit" % liftVersion % "test"
   lazy val liftWebkit = "net.liftweb" %% "lift-webkit" % liftVersion % "compile"
-  lazy val jettyTest = "org.mortbay.jetty" % "jetty" % "6.1.22" % "test"
-  lazy val c3p0 = "c3p0" % "c3p0" % "0.9.1.2"
-
-  // Databases:
   lazy val postgresql = "postgresql" % "postgresql" % "8.4-702.jdbc4"
-
-  // Test frameworks:
+  lazy val rogue = "com.foursquare" %% "rogue" % rogueVersion withSources()
+  lazy val scalaCheck =
+    buildScalaVersion match {
+      case "2.8.1" => "org.scala-tools.testing" %% "scalacheck" % "1.8" % "test"
+      case _       => "org.scala-tools.testing" %% "scalacheck" % "1.9" % "test"
+    }
   lazy val scalatest =
     buildScalaVersion match {
       case "2.8.1" => "org.scalatest" % "scalatest_2.8.1" % "1.5" % "test"
@@ -53,12 +56,13 @@ class BigtopProject(info: ProjectInfo) extends ParentProject(info) {
     }
 
   // Subprojects --------------------------------
-
-  lazy val core = bigtopProject("core", liftCommon, liftWebkit, scalatest, liftTestkit, jettyTest)()
+  
+  lazy val core = bigtopProject("core", liftCommon, liftWebkit, liftRecord, scalatest, scalaCheck, liftTestkit, jettyTest, bcrypt)()
   lazy val debug = bigtopProject("debug", liftCommon, liftWebkit, scalatest)()
-  lazy val report = bigtopProject("report", liftCommon, liftWebkit, scalatest)(debug, core)
-  lazy val squeryl = bigtopProject("squeryl", liftCommon, liftWebkit, liftSquerylRecord, postgresql, c3p0, scalatest)(debug, core)
-  lazy val mongodb = bigtopProject("mongodb", liftCommon, liftWebkit, liftMongodb, liftMongodbRecord, rogue, scalatest)(debug, core)
+  lazy val record = bigtopProject("record", liftCommon, liftWebkit, liftRecord, liftSquerylRecord, scalatest)(debug, core)
+  lazy val report = bigtopProject("report", liftCommon, liftWebkit, liftRecord, scalatest)(debug, core)
+  lazy val squeryl = bigtopProject("squeryl", liftCommon, liftWebkit, liftSquerylRecord, postgresql, c3p0, scalatest)(debug, core, record)
+  lazy val mongodb = bigtopProject("mongodb", liftCommon, liftWebkit, liftMongodb, liftMongodbRecord, rogue, scalatest)(debug, core, record)
   lazy val util = bigtopProject("util", liftCommon, liftWebkit, scalatest)(debug, core)
   
   lazy val doc = project(".", "doc", new BigtopDocProject(_))
