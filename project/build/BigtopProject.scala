@@ -44,31 +44,34 @@ class BigtopProject(info: ProjectInfo) extends ParentProject(info) {
   lazy val liftWebkit = "net.liftweb" %% "lift-webkit" % liftVersion % "compile"
   lazy val postgresql = "postgresql" % "postgresql" % "8.4-702.jdbc4"
   lazy val rogue = "com.foursquare" %% "rogue" % rogueVersion withSources()
+  
   lazy val scalaCheck =
     buildScalaVersion match {
       case "2.8.1" => "org.scala-tools.testing" %% "scalacheck" % "1.8" % "test"
       case _       => "org.scala-tools.testing" %% "scalacheck" % "1.9" % "test"
     }
+  
   lazy val scalatest =
     buildScalaVersion match {
       case "2.8.1" => "org.scalatest" % "scalatest_2.8.1" % "1.5" % "test"
       case _       => "org.scalatest" % "scalatest_2.9.0" % "1.6.1" % "test"
     }
-
+  
   // Subprojects --------------------------------
   
   lazy val core = bigtopProject("core", liftCommon, liftWebkit, liftRecord, scalatest, scalaCheck, liftTestkit, jettyTest, bcrypt)()
   lazy val debug = bigtopProject("debug", liftCommon, liftWebkit, scalatest)()
   lazy val record = bigtopProject("record", liftCommon, liftWebkit, liftRecord, liftSquerylRecord, scalatest)(debug, core)
-  lazy val report = bigtopProject("report", liftCommon, liftWebkit, liftRecord, scalatest)(debug, core)
-  lazy val squeryl = bigtopProject("squeryl", liftCommon, liftWebkit, liftSquerylRecord, postgresql, c3p0, scalatest)(debug, core, record)
-  lazy val mongodb = bigtopProject("mongodb", liftCommon, liftWebkit, liftMongodb, liftMongodbRecord, rogue, scalatest)(debug, core, record)
+  lazy val report = bigtopProject("report", liftCommon, liftWebkit, scalatest)(debug, core)
+  lazy val routes = bigtopProject("routes", liftCommon, liftWebkit, scalatest)(debug, core)
+  lazy val squeryl = bigtopProject("squeryl", liftCommon, liftWebkit, liftSquerylRecord, postgresql, c3p0, scalatest)(debug, core)
+  lazy val mongodb = bigtopProject("mongodb", liftCommon, liftWebkit, liftMongodb, liftMongodbRecord, rogue, scalatest)(debug, core)
   lazy val util = bigtopProject("util", liftCommon, liftWebkit, scalatest)(debug, core)
   
   lazy val doc = project(".", "doc", new BigtopDocProject(_))
   
   // Helpers ------------------------------------
-
+  
   val untypedResolver = {
     val host = System.getenv("DEFAULT_REPO_HOST")
     val path = System.getenv("DEFAULT_REPO_PATH")
