@@ -26,21 +26,29 @@ import HListOps._
 
 class SiteSuite extends FunSuite with Assertions {
   
-  val emptyOp: () => Box[LiftResponse] = () => Empty
-  val intOp: Int => Box[LiftResponse] = i => Empty
-
   object MySite extends Site {
-    val listContacts = add("contacts" /: PNil >> emptyOp)
+    val home = root >> (handleEmpty _)
+    val listContacts  = root / "contacts" >> (handleEmpty _)
+    val newContact = root / "contacts" / "new" >> (handleEmpty _)
+    val viewContact = root / "contacts" / IntArg >> (handleInt _)
+    val editContact = root / "contacts" / IntArg / "edit" >> (handleInt _)
+    val deleteContact = root / "contacts" / IntArg / "delete" >> (handleInt _)
 
-    val newContact = add(("contacts" /: "new" /: PNil) >> emptyOp)
-
-    val viewContact = add(("contacts" /: IntArg /: PNil) >> intOp)
-
-    val editContact = add(("contacts" /: IntArg /: "edit" /: PNil) >> intOp)
-
-    val deleteContact = add(("contacts" /: IntArg /: "delete" /: PNil) >> intOp)
+    def handleEmpty: Box[LiftResponse] = Empty
+    
+    def handleInt(i: Int): Box[LiftResponse] = Empty
   }
 
+  test("site routes") {
+    expect(MySite.home ::
+           MySite.listContacts ::
+           MySite.newContact ::
+           MySite.viewContact ::
+           MySite.editContact ::
+           MySite.deleteContact ::
+           Nil)(MySite.routes)
+  }
+  
   test("viewContact url") {
     expect("/contacts/123")(MySite.viewContact.url(Tuple1(123)))
   }

@@ -26,9 +26,10 @@ class RouteSuite extends FunSuite with Assertions {
   import ArgOps._
 
   test("Route construction with varying implicits type checks") {
-    "foo" /: "bar" /: PNil >> (() => Empty)
-    "foo" /: ConstArg("bar") /: PNil >> (() => Empty)
-    "foo" /: "bar" /: PNil >> (() => Empty)
+    val func = () => Empty
+    PNil / "foo" / "bar" >> func
+    PNil / "foo" / ConstArg("bar") >> func
+    PNil / "foo" / "bar" >> func
   }
 
 }

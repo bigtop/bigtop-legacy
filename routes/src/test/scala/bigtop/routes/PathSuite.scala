@@ -48,7 +48,7 @@ class PathSuite extends FunSuite with Assertions {
   }
 
   test("/ const") {
-    val p = "abc" /: PNil
+    val p = PNil / "abc"
     expect(Some(HNil))(p decode List("abc"))
     expect(None      )(p decode List("ab"))
     expect(None      )(p decode List("abcd"))
@@ -58,7 +58,7 @@ class PathSuite extends FunSuite with Assertions {
   }
 
   test("/ arg") {
-    val p = IntArg /: PNil
+    val p = PNil / IntArg
     expectTuple(Tuple1(123), (p decode List("123")).get)
 
     expect(None)(p decode List("abc"))
@@ -68,7 +68,7 @@ class PathSuite extends FunSuite with Assertions {
   }
 
   test("/ const / const") {
-    val p = "abc" /: "def" /: PNil
+    val p = PNil / "abc" / "def"
     expect(Some(HNil))(p decode List("abc", "def"))
     expect(None      )(p decode List("def", "abc"))
     
@@ -76,7 +76,7 @@ class PathSuite extends FunSuite with Assertions {
   }
 
   test("/ const / arg") {
-    val p = "abc" /: IntArg /: PNil
+    val p = PNil / "abc" / IntArg
     expectTuple(Tuple1(123), (p decode List("abc", "123")).get)
 
     expect(None)(p decode List("abc", "def"))
@@ -85,7 +85,7 @@ class PathSuite extends FunSuite with Assertions {
   }
 
   test("/ arg / const") {
-    val p = IntArg /: "def" /: PNil
+    val p = PNil / IntArg / "def"
     expectTuple(Tuple1(123), (p decode List("123", "def")).get)
 
     expect(None)(p decode List("abc", "def"))
@@ -94,7 +94,7 @@ class PathSuite extends FunSuite with Assertions {
   }
 
   test("/ arg / arg") {
-    val p = IntArg /: IntArg /: PNil
+    val p = PNil / IntArg / IntArg
     expectTuple((123, 456), (p decode List("123", "456")).get)
     expectTuple((456, 123), (p decode List("456", "123")).get)
 
@@ -105,7 +105,7 @@ class PathSuite extends FunSuite with Assertions {
   }
 
   test("/ arg / arg / const") {
-    val p = IntArg /: StringArg /: "abc" /: PNil
+    val p = PNil / IntArg / StringArg / "abc"
     expectTuple((123, "456"), (p decode List("123", "456", "abc")).get)
     expectTuple((456, "123"), (p decode List("456", "123", "abc")).get)
 
@@ -116,7 +116,7 @@ class PathSuite extends FunSuite with Assertions {
   }
 
   test("/ arg / arg / arg") {
-    val p = IntArg /: StringArg /: IntArg /: PNil
+    val p = PNil / IntArg / StringArg / IntArg
     expectTuple((123, "456", 789), (p decode List("123", "456", "789")).get)
     expectTuple((789, "456", 123), (p decode List("789", "456", "123")).get)
 
@@ -126,7 +126,7 @@ class PathSuite extends FunSuite with Assertions {
   }
     
   test("/ arg / arg / arg / const") {
-    val p = IntArg /: StringArg /: IntArg /: "ghi" /: PNil
+    val p = PNil / IntArg / StringArg / IntArg / "ghi"
     expectTuple((123, "456", 789), (p decode List("123", "456", "789", "ghi")).get)
 
     expect(None)(p decode List("abc", "456", "789", "ghi"))
@@ -135,7 +135,7 @@ class PathSuite extends FunSuite with Assertions {
   }
 
   test("/ arg / arg / arg / arg") {
-    val p = IntArg /: StringArg /: IntArg /: StringArg /: PNil
+    val p = PNil / IntArg / StringArg / IntArg / StringArg
     expectTuple((123, "456", 789, "012"), (p decode List("123", "456", "789", "012")).get)
     expectTuple(( 12, "789", 456, "123"), (p decode List("012", "789", "456", "123")).get)
 

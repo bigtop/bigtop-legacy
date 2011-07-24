@@ -46,10 +46,24 @@ sealed trait Path {
   type Tail <: Path
   type Result <: HList // The result type if this pattern matches
 
-  def decode(path: List[String]): Option[Result]
+  def self: This
+
+  final def decode(path: List[String]): Option[Result] =
+    decodeInternal(path.reverse)
   
-  def encode(args: Result): List[String]
+  def decodeInternal(path: List[String]): Option[Result]
   
+  final def encode(args: Result): List[String] =
+    encodeInternal(args).reverse
+  
+  def encodeInternal(args: Result): List[String]
+  
+  def /(v: LiteralArg): PLiteral[This] =
+    PLiteral[This](v, self)
+  
+  def /[V](v: MatchArg[V]): PMatch[V, This] =
+    PMatch[V, This](v, self)
+
   def >>(fn: HListFunction[Result, Box[LiftResponse]]): Route[Result] =
     new Route[Result] {
       def apply(in: Req): Box[LiftResponse] =
@@ -64,11 +78,7 @@ sealed trait Path {
 * subtypes: PMatch matches a URL argument, and PLiteral matches
 * a URL segment from which we don't want to extract an argument.
 */
-abstract sealed class PCons[Hd, Tl <: Path](head: Arg[Hd], tail: Tl) extends Path {
-  def /:(v: LiteralArg): PLiteral[This]
-  
-  def /:[V](v: MatchArg[V]): PMatch[V, This]
-}
+abstract sealed class PCons[Hd, Tl <: Path](head: Arg[Hd], tail: Tl) extends Path
 
 /**
 * A PCons cell representing a path fragment from which we're not
@@ -80,22 +90,18 @@ final case class PLiteral[Tl <: Path](head: LiteralArg, tail: Tl)
   type Head = Unit
   type Tail = Tl
   type Result = tail.Result
-  
-  def /:[V](v: MatchArg[V]): PMatch[V, This] =
-    PMatch[V, This](v, this)
-  
-  def /:(v: LiteralArg): PLiteral[This] =
-    PLiteral[This](v, this)
 
-  def decode(path: List[String]): Option[Result] =
+  def self = this
+
+  def decodeInternal(path: List[String]): Option[Result] =
     path match {
       case x :: xs => 
-        if (head.decode(x).isDefined) tail.decode(xs) else None
+        if (head.decode(x).isDefined) tail.decodeInternal(xs) else None
       case Nil => None
     }
   
-  def encode(args: Result): List[String] =
-    head.encode(()) :: tail.encode(args)
+  def encodeInternal(args: Result): List[String] =
+    head.encode(()) :: tail.encodeInternal(args)
 }
 
 /**
@@ -109,18 +115,14 @@ final case class PMatch[Hd, Tl <: Path](head: MatchArg[Hd], tail: Tl)
   type Head = Arg[Hd]
   type Tail = Tl
   type Result = HCons[Hd, tail.Result]
-
-  def /:(v: LiteralArg): PLiteral[This] =
-    PLiteral[This](v, this)
   
-  def /:[V](v: MatchArg[V]): PMatch[V, This] =
-    PMatch[V, This](v, this)
+  def self = this
 
-  def decode(path: List[String]): Option[Result] =
+  def decodeInternal(path: List[String]): Option[Result] =
     path match {
       case x :: xs => 
         head.decode(x).flatMap{ v => 
-          tail.decode(xs) match {
+          tail.decodeInternal(xs) match {
             case None     => None
             case Some(vs) => Some(HCons(v, vs))
           }
@@ -128,8 +130,8 @@ final case class PMatch[Hd, Tl <: Path](head: MatchArg[Hd], tail: Tl)
       case Nil => None
     }
   
-  def encode(args: Result): List[String] =
-    head.encode(args.head) :: tail.encode(args.tail)
+  def encodeInternal(args: Result): List[String] =
+    head.encode(args.head) :: tail.encodeInternal(args.tail)
 }
 
 class PNil extends Path {
@@ -138,19 +140,15 @@ class PNil extends Path {
   type Tail = PNil
   type Result = HNil
 
-  def /:(v: LiteralArg): PLiteral[This] =
-    PLiteral[This](v, this)
-  
-  def /:[V](v: MatchArg[V]): PMatch[V, This] =
-    PMatch[V, This](v, this)
+  def self = this
 
-  def decode(path: List[String]): Option[Result] =
+  def decodeInternal(path: List[String]): Option[Result] =
     path match {
       case Nil => Some(HNil)
       case _ => None
     }
   
-  def encode(args: Result): List[String] =
+  def encodeInternal(args: Result): List[String] =
     Nil
 }
 
