@@ -52,8 +52,8 @@ object BCrypt {
     str.length == hashedLength &&
     HashRegex.findFirstIn(str).isDefined
   
-
   // Internal stuff --------------------------------------------------
 
-  val HashRegex = "^\\$[a-z0-9]{2}\\$[0-9]{2}\\$".r
+  val HashRegex = "^\\$a2\\$[0-9]{2}\\$".r
+  
 }
