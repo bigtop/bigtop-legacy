@@ -44,8 +44,7 @@ class BCryptSuite extends FunSuite with Assertions {
   }
 
   test("isHash is false for normal strings") {
-    // This test will very occassionally fail when a BCrypt
-    // hash is randomly generated
+    // This test will very occassionally fail when a BCrypt hash is randomly generated:
     forAll { s: String => !BCrypt.isHash(s) }
   }
 }

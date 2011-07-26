@@ -54,6 +54,6 @@ object BCrypt {
   
   // Internal stuff --------------------------------------------------
 
-  val HashRegex = "^\\$a2\\$[0-9]{2}\\$".r
+  val HashRegex = "^\\$2a\\$[0-9]{2}\\$".r
   
 }
