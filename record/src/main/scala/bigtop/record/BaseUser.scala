@@ -182,8 +182,8 @@ trait BaseUserMeta[T <: BaseUser[T]] {
   
   // Real identity ------------------------------
   
-  private object realUsernameVar extends SessionVar[Box[String]](Empty)
-  private object realUserVar extends RequestVar[Box[T]](
+  private object realUsernameVar extends SessionVar[Option[String]](Empty)
+  private object realUserVar extends RequestVar[Option[T]](
     realUsernameVar.is.flatMap(byUsername _))
 
   def realUsername = realUsernameVar.is
@@ -191,8 +191,8 @@ trait BaseUserMeta[T <: BaseUser[T]] {
   
   // Effective identity -------------------------
   
-  private object effectiveUsernameVar extends SessionVar[Box[String]](Empty)
-  private object effectiveUserVar extends RequestVar[Box[T]](
+  private object effectiveUsernameVar extends SessionVar[Option[String]](Empty)
+  private object effectiveUserVar extends RequestVar[Option[T]](
     effectiveUsernameVar.is.flatMap(byUsername _))
 
   def effectiveUsername = effectiveUsernameVar.is
@@ -255,6 +255,14 @@ trait BaseUserMeta[T <: BaseUser[T]] {
 
   // Log in, log out ----------------------------
   
+  /** Is the user's effective identity logged in? */
+  def isLoggedIn: Boolean =
+    effectiveUsername.isDefined
+  
+  /** Is the user's real identity logged in? */
+  def isReallyLoggedIn: Boolean =
+    realUsername.isDefined
+  
   /** 
    * Log the user in. Return true if successful, false if the username/password was wrong.
    * Does not inform the user in any way.
@@ -292,8 +300,8 @@ trait BaseUserMeta[T <: BaseUser[T]] {
     realUserVar.remove
     effectiveUserVar.remove
     
-    realUsernameVar.set(Full(username))
-    effectiveUsernameVar.set(Full(username))
+    realUsernameVar.set(Some(username))
+    effectiveUsernameVar.set(Some(username))
   }
   
   /** 
@@ -323,7 +331,7 @@ trait BaseUserMeta[T <: BaseUser[T]] {
    */
   def changeIdentity(user: T): Boolean =
     realUser match {
-      case Full(real) if real.canChangeIdentity =>
+      case Some(real) if real.canChangeIdentity =>
         effectiveUserVar.remove
         effectiveUsernameVar.set(Full(user.username.is))
         true

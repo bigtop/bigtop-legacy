@@ -26,10 +26,10 @@ import net.liftweb.util._
 class BaseUserSuite extends BaseSuite {
   
   def expectLoggedOut = {
-    expect(Empty)(User.realUsername)
-    expect(Empty)(User.realUser)
-    expect(Empty)(User.effectiveUsername)
-    expect(Empty)(User.effectiveUser)
+    expect(None)(User.realUsername)
+    expect(None)(User.realUser)
+    expect(None)(User.effectiveUsername)
+    expect(None)(User.effectiveUser)
   }
 
   val session = new LiftSession("", StringHelpers.randomString(20), Empty)
@@ -108,10 +108,10 @@ class BaseUserSuite extends BaseSuite {
     
       User.logIn(user1)
     
-      expect(Full(user1.username.is))(User.realUsername)
-      expect(Full(user1))(User.realUser)
-      expect(Full(user1.username.is))(User.effectiveUsername)
-      expect(Full(user1))(User.effectiveUser)
+      expect(Some(user1.username.is))(User.realUsername)
+      expect(Some(user1))(User.realUser)
+      expect(Some(user1.username.is))(User.effectiveUsername)
+      expect(Some(user1))(User.effectiveUser)
     
       User.logOut
     
@@ -141,19 +141,19 @@ class BaseUserSuite extends BaseSuite {
       User.logIn(user1)
       expect(true)(User.changeIdentity(user2))
     
-      expect(Full(user1.username.is))(User.realUsername)
-      expect(Full(user1))(User.realUser)
-      expect(Full(user2.username.is))(User.effectiveUsername)
-      expect(Full(user2))(User.effectiveUser)
+      expect(Some(user1.username.is))(User.realUsername)
+      expect(Some(user1))(User.realUser)
+      expect(Some(user2.username.is))(User.effectiveUsername)
+      expect(Some(user2))(User.effectiveUser)
       
       // User.restoreIdentity would work, but we want to check that changeIdentity
       // is checking the real user's permissions, not the effective ones:
       User.changeIdentity(user1)
       
-      expect(Full(user1.username.is))(User.realUsername)
-      expect(Full(user1))(User.realUser)
-      expect(Full(user1.username.is))(User.effectiveUsername)
-      expect(Full(user1))(User.effectiveUser)
+      expect(Some(user1.username.is))(User.realUsername)
+      expect(Some(user1))(User.realUser)
+      expect(Some(user1.username.is))(User.effectiveUsername)
+      expect(Some(user1))(User.effectiveUser)
 
       User.logOut
     
@@ -164,10 +164,10 @@ class BaseUserSuite extends BaseSuite {
       User.logIn(user2)
       expect(false)(User.changeIdentity(user1))
       
-      expect(Full(user2.username.is))(User.realUsername)
-      expect(Full(user2))(User.realUser)
-      expect(Full(user2.username.is))(User.effectiveUsername)
-      expect(Full(user2))(User.effectiveUser)
+      expect(Some(user2.username.is))(User.realUsername)
+      expect(Some(user2))(User.realUser)
+      expect(Some(user2.username.is))(User.effectiveUsername)
+      expect(Some(user2))(User.effectiveUser)
       
       User.logOut
     
