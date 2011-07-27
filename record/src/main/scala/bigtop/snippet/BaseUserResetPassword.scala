@@ -77,6 +77,7 @@ class BaseUserResetPassword[T <: BaseUser[T]](meta: BaseUserMeta[T]) extends Sta
         </div>
       </div>
       <div class="submit-wrapper">
+        { S.param("go").map(go => <input type="hidden" name="go" value={go} />).getOrElse(NodeSeq.Empty) }
         <input data-reset-binding="submit" type="submit" />
       </div>
     </form>
@@ -126,7 +127,7 @@ class BaseUserResetPassword[T <: BaseUser[T]](meta: BaseUserMeta[T]) extends Sta
 
   /** Action to take after the user's password has been changed. */
   def success: Unit =
-    S.redirectTo(S.referer.openOr("/"))
+    S.redirectTo(S.param("go").openOr("/"))
 
   /** Action to take if the user's password could not be changed. */
   def failure: Unit = {}

@@ -31,14 +31,11 @@ import bigtop.snippet.SnippetUtil._
 /**
  * Handles BaseUser login.
  */
-class BaseUserLogin[T <: BaseUser[T]](meta: BaseUserMeta[T]) extends StatefulSnippet with Loggable {
+class BaseUserChangeIdentity[T <: BaseUser[T]](meta: BaseUserMeta[T]) extends StatefulSnippet with Loggable {
   
   /** The username */
   var username = ""
   
-  /** The user's password */
-  var password = ""
-
   def dispatch = { 
     case "render" => render
     case "scaffold" => scaffold
@@ -46,33 +43,23 @@ class BaseUserLogin[T <: BaseUser[T]](meta: BaseUserMeta[T]) extends StatefulSni
   
   def render =
     bindUsername &
-    bindPassword &
-    bindSubmit &
-    bindForgotPassword
+    bindSubmit
   
   def scaffold(in: NodeSeq) =
     render(scaffoldTemplate)
   
   def scaffoldTemplate =
-    <form method="post" class="login-form">
+    <form method="post" class="change-identity-form">
       <div class="field-wrapper">
         <label for="username">{ scaffoldUsernameLabel }</label>
-        <input data-login-binding="username" type="text" />
+        <input data-change-identity-binding="username" type="text" />
         <div class="message-wrapper">
           <div class="lift:Msg?id=username_id"></div>
         </div>
       </div>
-      <div class="field-wrapper">
-        <label for="password">Password</label>
-        <input data-login-binding="password" type="password" />
-        <div class="message-wrapper">
-          <div class="lift:Msg?id=password_id"></div>
-        </div>
-      </div>
       <div class="submit-wrapper">
         { S.param("go").map(go => <input type="hidden" name="go" value={go} />).getOrElse(NodeSeq.Empty) }
-        <input data-login-binding="submit" type="submit" class="submit" />
-        <input data-login-binding="forgot-password" type="submit" class="forgot-password" />
+        <input data-change-identity-binding="submit" type="submit" class="submit" />
       </div>
     </form>
   
@@ -80,44 +67,35 @@ class BaseUserLogin[T <: BaseUser[T]](meta: BaseUserMeta[T]) extends StatefulSni
     Text("Username")
   
   def bindUsername =
-    "data-login-binding=username" #> 
+    "data-change-identity-binding=username" #> 
     preserveAttrs(SHtml.text(username, onUsernameChange _), "name" :: Nil)
   
-  def bindPassword =
-    "data-login-binding=password" #> 
-    preserveAttrs(SHtml.password(password, onPasswordChange _), "name" :: Nil)
-  
   def bindSubmit =
-    "data-login-binding=submit" #> 
+    "data-change-identity-binding=submit" #> 
      preserveAttrs(SHtml.submit("Log in", onSubmit _), "name" :: Nil)
-  
-  def bindForgotPassword =
-    "data-login-binding=forgot-password" #>
-    preserveAttrs(SHtml.submit("Forgot password", onForgotPassword _), "name" :: Nil)
   
   def onUsernameChange(str: String): Unit =
     username = str.trim
   
-  def onPasswordChange(str: String): Unit =
-    password = str.trim
-  
   def onSubmit: Unit =
-    if(meta.logIn(username, password)) success else failure
-
+    if(meta.effectiveUser.map(_.canChangeIdentity).getOrElse(false)) {
+      meta.byUsername(username) match {
+        case Some(user) =>
+          if(meta.changeIdentity(user)) success else failure
+        
+        case _ =>
+          S.notice("That user does not exist.")
+          failure
+      }
+    } else {
+      failure
+    }
+  
   /** Action to take after the user has successfully logged in. */
   def success: Unit =
     S.redirectTo(S.param("go").openOr("/"))
 
   /** Action to take if the user could not be logged in. */
-  def failure: Unit =
-    S.error("Login details incorrect.")
-
-  def onForgotPassword: Unit =
-    if(username.length > 0) {
-      meta.byUsername(username).foreach(_.sendForgotPasswordEmail)
-      S.notice("We have sent you an email containing instructions on how to reset your password.")
-    } else {
-      S.error("Please enter your username and click \"Forgot password\" again.")
-    }
+  def failure: Unit = {}
     
 }

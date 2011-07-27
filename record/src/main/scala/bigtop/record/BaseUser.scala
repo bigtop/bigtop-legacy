@@ -48,7 +48,11 @@ trait BaseUser[T <: BaseUser[T]] extends Record[T] with Loggable {
     
     override def validations =
       valMinLen(1, "Please enter a username") _ ::
+      valUnique("That username is already taken") _ ::
       super.validations
+    
+    def valUnique(msg: String)(username: String): List[FieldError] =
+      if(baseUserMeta.byUsername(username) == self) Nil else List(FieldError(this, msg))
   }
 
   // bcrypt encrypted password:
