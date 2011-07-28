@@ -105,8 +105,10 @@ class BaseUserLogin[T <: BaseUser[T]](meta: BaseUserMeta[T]) extends StatefulSni
     if(meta.logIn(username, password)) success else failure
 
   /** Action to take after the user has successfully logged in. */
-  def success: Unit =
+  def success: Unit = {
+    S.notice("Hello again, " + meta.effectiveUser.map(_.username.is).getOrElse("Anonymous") + ".")
     S.redirectTo(S.param("go").openOr("/"))
+  }
 
   /** Action to take if the user could not be logged in. */
   def failure: Unit =
