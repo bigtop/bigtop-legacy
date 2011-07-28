@@ -101,7 +101,7 @@ class BigtopProject(info: ProjectInfo) extends ParentProject(info) {
   }
   
   // Documentation ------------------------------
-
+  
   class BigtopDocProject(info: ProjectInfo) extends DefaultProject(info) {
     
     /** Sibling of this project, that is, other BigtopSubprojects having the same parent. */
@@ -148,10 +148,12 @@ class BigtopProject(info: ProjectInfo) extends ParentProject(info) {
     override def outputRootPath        = super.outputRootPath        / "apidoc"
     override def managedDependencyPath = super.managedDependencyPath / "apidoc"
    
-   	/** The options provided to the 'doc' and 'docTest' actions. */
   	override def documentOptions: Seq[ScaladocOption] =
-  		LinkSource ::
-  		super.documentOptions.toList
+  		super.documentOptions ++ 
+  		Seq(SimpleDocOption("-verbose"),
+  		    SimpleDocOption("-doc-source-url"),
+      		SimpleDocOption("https://github.com/bigtop/bigtop/tree/master/?{FILE_PATH}"))
+  		
   }
 
 }
