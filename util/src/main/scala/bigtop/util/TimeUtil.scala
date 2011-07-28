@@ -20,20 +20,40 @@ package util
 import java.util._
 import org.joda.time._
 
+/**
+ * Time-related utility methods: converting between time formats, temporal arithmetic,
+ * formatting times as strings, and so on.
+ */
 object TimeUtil {
   
+  /** Equivalent to `ago(then, Calendar.getInstance)`. */
   def ago(then: Calendar): String =
     ago(then, new GregorianCalendar())
   
+  /**
+   * Create an informal human-readable string representing the time difference between `then` and `now`.
+   *
+   * See the docs for tje Joda Time variants for more information. 
+   */
   def ago(then: Calendar, now: Calendar): String =
     ago(new DateTime(then), new DateTime(now))
 
+  /** Equivalent to `ago(then, new DateTime)`. */
   def ago(then: DateTime): String =
     ago(then, new DateTime())
   
+  /**
+   * Create an informal human-readable string representing the time difference between `then` and `now`.
+   *
+   * Examples:
+   *  - 2 years ago   
+   *  - last year    
+   *  - yesterday     
+   *  - in 5 minutes
+   */
   def ago(then: DateTime, now: DateTime): String = {
     val period = new Period(now, then)
-    
+
     agoInner(period.getYears(), "years", "last year", "next year").
     orElse(agoInner(period.getMonths(), "months", "last month", "next month")).
     orElse(agoInner(period.getWeeks(), "weeks", "last week", "next week")).
@@ -44,6 +64,7 @@ object TimeUtil {
     getOrElse("just now")
   }
   
+  /** Helper that does the bulk of the grunt work for `ago()`. */
   private def agoInner(amount: => Int, plural: String, last: String, next: String): Option[String] =
     if(amount == 0) {
       None
