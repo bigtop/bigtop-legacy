@@ -73,7 +73,7 @@ trait IdRecordMeta[T <: IdRecord[T]] extends MongoMetaRecord[T] {
     
   schema += this
   
-  def all =
+  def all: Query[T]  =
     Rogue.metaRecordToQueryBuilder(this)
   
   def byId(id: ObjectId): Query[T] =
