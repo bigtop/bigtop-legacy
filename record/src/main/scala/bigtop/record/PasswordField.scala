@@ -28,7 +28,6 @@ import net.liftweb.json._
 import net.liftweb.record._
 import net.liftweb.record.field._
 import net.liftweb.record.field._
-import net.liftweb.squerylrecord.SquerylRecordField
 import net.liftweb.util.FieldError
 import net.liftweb.util.Helpers._
 
@@ -39,7 +38,7 @@ object PasswordField {
   @volatile var minPasswordLength = 5
 }
 
-trait BCryptPasswordTypedField extends TypedField[String] with IgnoreInEquals with SquerylRecordField {
+trait BCryptPasswordTypedField extends TypedField[String] with IgnoreInEquals {
   protected var invalidMsg : String = ""
 
   protected var validatedValue: Box[String] = valueBox
@@ -104,7 +103,9 @@ trait BCryptPasswordTypedField extends TypedField[String] with IgnoreInEquals wi
 }
 
 class PasswordField[OwnerType <: Record[OwnerType]](rec: OwnerType)
-  extends Field[String, OwnerType] with MandatoryTypedField[String] with BCryptPasswordTypedField {
+  extends Field[String, OwnerType]
+  with MandatoryTypedField[String]
+  with BCryptPasswordTypedField {
 
   def this(rec: OwnerType, value: String) = {
     this(rec)
@@ -115,7 +116,9 @@ class PasswordField[OwnerType <: Record[OwnerType]](rec: OwnerType)
 }
 
 class OptionalPasswordField[OwnerType <: Record[OwnerType]](rec: OwnerType)
-  extends Field[String, OwnerType] with OptionalTypedField[String] with BCryptPasswordTypedField {
+  extends Field[String, OwnerType]
+  with OptionalTypedField[String]
+  with BCryptPasswordTypedField {
 
   def this(rec: OwnerType, value: Box[String]) = {
     this(rec)
@@ -124,4 +127,3 @@ class OptionalPasswordField[OwnerType <: Record[OwnerType]](rec: OwnerType)
 
   def owner = rec
 }
-

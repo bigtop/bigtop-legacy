@@ -45,6 +45,19 @@ trait BaseUser[T <: BaseUser[T]] extends IdRecord[T] with bigtop.record.BaseUser
       super.validations
   }
   
+  override val password = new bigtop.squeryl.PasswordField(this) {
+    override def validations =
+      valPasswordValid _ ::
+      super.validations
+    
+    def valPasswordValid(str: String): List[FieldError] =
+      if(baseUserMeta.isValidPassword(str)) {
+        Nil
+      } else {
+        List(FieldError(this, baseUserMeta.invalidPasswordMessage))
+      }
+  }
+  
   def fullName = firstName.is + " " + lastName.is
   
 }

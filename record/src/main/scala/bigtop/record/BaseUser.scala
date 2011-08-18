@@ -34,7 +34,7 @@ import net.liftweb.util.Mailer._
 trait BaseUser[T <: BaseUser[T]] extends Record[T] with Loggable {
   self: T =>
   
-  private def baseUserMeta =
+  protected def baseUserMeta =
     meta.asInstanceOf[BaseUserMeta[T]]
   
   def save: T
