@@ -21,11 +21,11 @@ package report
 trait ReportModel[T] extends ReportOrderOps {
   
   /**
-  * The "columns" on the report.
-  *
-  * Columns are essentially ways of sorting the report.
-  * They may not actually be rendered as columns on the page.
-  */
+   * The "columns" on the report.
+   *
+   * Columns are essentially ways of sorting the report.
+   * They may not actually be rendered as columns on the page.
+   */
   val reportColumns: List[ReportColumn]
   
   /** The possible ways of sorting the report. */

@@ -27,30 +27,44 @@ import HListOps._
 class SiteSuite extends FunSuite with Assertions {
   
   object MySite extends Site {
-    val home = root >> (handleEmpty _)
-    val listContacts  = root / "contacts" >> (handleEmpty _)
-    val newContact = root / "contacts" / "new" >> (handleEmpty _)
-    val viewContact = root / "contacts" / IntArg >> (handleInt _)
-    val editContact = root / "contacts" / IntArg / "edit" >> (handleInt _)
-    val deleteContact = root / "contacts" / IntArg / "delete" >> (handleInt _)
+    val home   = root >> (handleEmpty _)
+    val show   = root / "show" >> (handleEmpty _)
+    val negate = root / "negate" / IntArg >> (handleInt _)
+    val add    = root / "add" / IntArg / "and" / IntArg >> (handleInts _)
+    val concat = root / "concat" / StringArg / "and" / IntArg >> (handleStringAndInt _)
 
     def handleEmpty: Box[LiftResponse] = Empty
     
     def handleInt(i: Int): Box[LiftResponse] = Empty
+    def handleInts(a: Int, b: Int): Box[LiftResponse] = Empty
+    def handleStringAndInt(a: String, b: Int): Box[LiftResponse] = Empty
   }
 
-  test("site routes") {
-    expect(MySite.home ::
-           MySite.listContacts ::
-           MySite.newContact ::
-           MySite.viewContact ::
-           MySite.editContact ::
-           MySite.deleteContact ::
-           Nil)(MySite.routes)
+  test("site.paths") {
+    val expected =
+      List[Path](MySite.home,
+                 MySite.show,
+                 MySite.negate,
+                 MySite.add,
+                 MySite.concat)
+    
+    expect(expected)(MySite.paths)
   }
   
-  test("viewContact url") {
-    expect("/contacts/123")(MySite.viewContact.url(Tuple1(123)))
+  test("path.url") {
+    expect("/")(MySite.home.url)
+    expect("/show")(MySite.show.url)
+    expect("/negate/123")(MySite.negate.url(123))
+    expect("/add/123/and/234")(MySite.add.url(123, 234))
+    expect("/concat/123/and/234")(MySite.concat.url("123", 234))
+  }
+
+  test("path.apply") {
+    expect(Empty)(MySite.home())
+    expect(Empty)(MySite.show())
+    expect(Empty)(MySite.negate(123))
+    expect(Empty)(MySite.add(123, 234))
+    expect(Empty)(MySite.concat("123", 234))
   }
 
 }

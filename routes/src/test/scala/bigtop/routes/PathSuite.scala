@@ -38,6 +38,8 @@ class PathSuite extends FunSuite with Assertions {
   def expectTuple[A,B,C,D](v1: Tuple4[A,B,C,D], v2: Tuple4[A,B,C,D]) =
     expect(v1)(v2)
   
+  val PNil = new PNil(null)
+  
   // Tests --------------------------------------
   
   test("/") {
@@ -141,4 +143,5 @@ class PathSuite extends FunSuite with Assertions {
 
     expect(List("123", "456", "789", "012"))(p encode (123, "456", 789, "012"))
   }
+
 }

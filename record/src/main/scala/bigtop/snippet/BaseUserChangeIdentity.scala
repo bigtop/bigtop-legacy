@@ -28,9 +28,7 @@ import net.liftweb.util.Helpers._
 import bigtop.record._
 import bigtop.snippet.SnippetUtil._
 
-/**
- * Handles BaseUser login.
- */
+/** Handles BaseUser change identity. */
 class BaseUserChangeIdentity[T <: BaseUser[T]](meta: BaseUserMeta[T]) extends StatefulSnippet with Loggable {
   
   /** The username */

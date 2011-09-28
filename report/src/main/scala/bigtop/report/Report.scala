@@ -48,21 +48,21 @@ trait Report[T] {
   // URL parameter defaults ---------------------
   
   /**
-  * The default item to start on if no URL parameter is specified.
-  * Unless overridden, this defaults to 0.
-  */
+   * The default item to start on if no URL parameter is specified.
+   * Unless overridden, this defaults to 0.
+   */
   lazy val defaultStart: Int = 0
   
   /**
-  * The default number of items per page if no URL parameter is specified.
-  * Unless overridden, this defaults to 0.
-  */
+   * The default number of items per page if no URL parameter is specified.
+   * Unless overridden, this defaults to 0.
+   */
   lazy val defaultCount: Option[Int] = Some(25)
 
   /**
-  * The default sort order if no URL parameter is specified.
-  * Unless overridden, this defaults to be the first column in ascending order.
-  */
+   * The default sort order if no URL parameter is specified.
+   * Unless overridden, this defaults to be the first column in ascending order.
+   */
   lazy val defaultOrder: ReportOrder = ReportOrder.Asc(reportModel.reportColumns(0))
   
   // UrlVars ------------------------------------
@@ -94,10 +94,10 @@ trait Report[T] {
   object count extends UrlRequestVar(CountParam)
   
   /**
-  * The URL used to open this page.
-  * We store this in a val at snippet creation time in case we end up rewriting URLs
-  * during an AJAX call (which rewrites the /ajax_request/foo URL).
-  */
+   * The URL used to open this page.
+   * We store this in a val at snippet creation time in case we end up rewriting URLs
+   * during an AJAX call (which rewrites the /ajax_request/foo URL).
+   */
   val reportUrl = Url.fromLift
   
   def rewriteUrl: Url =

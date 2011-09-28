@@ -25,18 +25,18 @@ import net.liftweb.http._
 // https://github.com/harrah/up
 
 sealed trait HList {
-	type Head
-	type Tail <: HList
+  type Head
+  type Tail <: HList
 }
 
 final case class HCons[H, T <: HList](val head : H, val tail : T) extends HList {
-	type Head = H
-	type Tail = T
+  type Head = H
+  type Tail = T
 }
 
 sealed class HNil extends HList {
-	type Head = Nothing
-	type Tail = HNil
+  type Head = Nothing
+  type Tail = HNil
 }
 
 case object HNil extends HNil

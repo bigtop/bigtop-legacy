@@ -24,20 +24,18 @@ import net.liftweb.http._
 
 trait Site extends HListOps with ArgOps with Function1[Req, Box[LiftResponse]] {
 
-  var routes: List[Route[_]] = Nil
+  var paths: List[Path] = Nil
 
-  val root = new PathBuilder(this, PNil)
+  val root = new PNil(this)
   
-  def add[T <: HList](route: Route[T]): Route[T] = {
-    routes = routes :+ route
-    route
-  }
+  def add[P <: Path](path: P): Unit =
+    paths = paths :+ path
   
   def apply(req: Req): Box[LiftResponse] = 
-    dispatch(req, routes)
+    dispatch(req, paths)
   
-  def dispatch(req: Req, routes: List[Route[_]]): Box[LiftResponse] =
-    routes match {
+  def dispatch(req: Req, paths: List[Path]): Box[LiftResponse] =
+    paths match {
       case Nil => Empty
       
       case head :: tail =>
@@ -46,15 +44,4 @@ trait Site extends HListOps with ArgOps with Function1[Req, Box[LiftResponse]] {
           case other => other
         }
     }
-}
-
-class PathBuilder[P <: Path](val site: Site, val path: P) {
-  def /[V](v: MatchArg[V]): PathBuilder[PMatch[V, path.This]] =
-    new PathBuilder(site, path / v)
-  
-  def /(v: LiteralArg): PathBuilder[PLiteral[path.This]] =
-    new PathBuilder(site, path / v)
-  
-  def >>(fn: HListFunction[path.Result, Box[LiftResponse]]): Route[path.Result] =
-    site.add(path >> fn)
 }

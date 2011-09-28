@@ -19,16 +19,16 @@ package record
 
 import net.liftweb.record._
 
-/**
- * Default equals methods for subclasses of Record:
- *  - equals - compares all fields in the record;
- *  - dataEquals - compares all fields except the primary key.
- * 
- * The methods compare the values of all fields except:
- *  - PasswordTypedFields;
- *  - fields marked with the IgnoreInEquals trait.
- */
-// This seems to cause problems in the mongodb implementation,
+// /**
+//  * Default equals methods for subclasses of Record:
+//  *  - equals - compares all fields in the record;
+//  *  - dataEquals - compares all fields except the primary key.
+//  * 
+//  * The methods compare the values of all fields except:
+//  *  - PasswordTypedFields;
+//  *  - fields marked with the IgnoreInEquals trait.
+//  */
+// [DJG] This seems to cause problems in the mongodb implementation,
 // so I've copied the code out into bigtop.{squeryl,mongodb}.IdRecord for now.
 //
 // trait EqualsHelper[T <: EqualsHelper[T]] extends Record[T] {
