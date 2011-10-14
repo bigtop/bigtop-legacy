@@ -17,66 +17,53 @@
 package bigtop
 package routes
 
-// The Pattern encodes requires we specify if an Arg is a
-// Literal or a Match. Hence we seal the Arg trait and
-// require implementations to use the corresponding
-// sub-traits.
+/**
+ * Trait describing the required behaviour to map URL path segments
+ * to typed values we can use in our applications.
+ *
+ * For example, the URL:
+ * 
+ *   http://example.com/abc/123
+ *
+ * has a path "/abc/123" containing two segments: "abc" and "123".
+ *
+ * You can subclass this for any T: String, Int, Person, etc.
+ */
+trait Arg[T] {
 
-sealed trait Arg[T] {
+  /**
+   * Attempt to decode a URL path segment into a typed value.
+   * Return Some(value) if successful, None if unsuccessful.
+   */
+  def decode(in: String): Option[T]
+  
+  /** Encode a typed value as a URL path segment. */
+  def encode(in: T): String
 
-  def encode(value: T): String
-  def decode(path: String): Option[T]
-  
-  def urlEncode(str: String): String =
-    java.net.URLEncoder.encode(str, "utf-8")
-  
-  def urlDecode(str: String): String =
-    java.net.URLDecoder.decode(str, "utf-8")
-  
 }
 
-trait LiteralArg extends Arg[Unit]
-
-trait MatchArg[T] extends Arg[T]
-
-object IntArg extends MatchArg[Int] {
+/** Maps between path segments and integers. */
+case object IntArg extends Arg[Int] {
   
-  def encode(value: Int) =
-    urlEncode(value.toString)
+  def encode(in: Int) =
+    in.toString
   
-  def decode(path: String) =
+  def decode(in: String) =
     try {
-      Some(urlDecode(path).toInt)
+      Some(in.toInt)
     } catch {
       case exn: NumberFormatException => None
     }
   
 }
 
-object StringArg extends MatchArg[String] {
+/** Maps between path segments and strings. Escapes/unescapes characters that are reserved in URLs. */
+case object StringArg extends Arg[String] {
   
-  def encode(value: String) =
-    urlEncode(value)
+  def encode(in: String) =
+    in
   
-  def decode(path: String) =
-    Some(urlDecode(path))
+  def decode(in: String) =
+    Some(in)
   
 }
-
-case class ConstArg(value: String) extends LiteralArg {
-
-  def encode(v: Unit): String = value
-  
-  def decode(path: String) = {
-    if (path == value)
-      Some(path)
-    else
-      None
-  }
-}
-
-trait ArgOps {
-  implicit def stringToArg(v: String): LiteralArg = ConstArg(v)
-}
-
-object ArgOps extends ArgOps

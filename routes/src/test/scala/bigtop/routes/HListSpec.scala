@@ -17,27 +17,18 @@
 package bigtop
 package routes
 
-trait Site extends RouteBuilder {
+import org.specs._
 
-  var routes: List[Route[_]] =
-    Nil
+class HListSpec extends Specification {
+
+  "HLists can have heterogeneous arguments" in {
+    val list = 2.0 :: 1 :: HNil
+    
+    list.head mustEqual 2.0
+    list.tail mustEqual HCons(1, HNil)
+    
+    list.tail.head mustEqual 1
+    list.tail.tail mustEqual HNil
+  }
   
-  val end = PNil
-  val any = PAny
-  
-  implicit val site = this
-  
-  def addRoute(route: Route[_]): Unit =
-    routes = routes :+ route
-  
-  def dispatch(req: Request): Option[Response] = 
-    dispatch(req, routes)
-  
-  private def dispatch(req: Request, routes: List[Route[_]]): Option[Response] =
-    routes match {
-      case Nil => None
-      
-      case head :: tail =>
-        head.dispatch(req).orElse(dispatch(req, tail))
-    }
-}
+} 

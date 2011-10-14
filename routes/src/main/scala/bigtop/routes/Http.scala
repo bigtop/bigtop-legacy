@@ -17,21 +17,22 @@
 package bigtop
 package routes
 
-import org.scalatest._
+import java.net.URLEncoder.{encode => urlEncode}
+import java.net.URLDecoder.{decode => urlDecode}
 
-class ArgSuite extends FunSuite with Assertions {
+case class Request(val path: List[String])
+
+object Request {
   
-  test("IntArg") {
-    expect("123")(IntArg encode 123)
-    expect("-123")(IntArg encode -123)
-    expect(Some(123))(IntArg decode "123")
-    expect(Some(-123))(IntArg decode "-123")
-    expect(None)(IntArg decode "abc")
-  }
+  def apply(path: String): Request =
+    Request(path.split("/").
+                 toList.
+                 filterNot(_.trim == "").
+                 map(urlDecode(_, "utf-8")))
   
-  test("StringArg") {
-    expect("a%2Fb")(StringArg encode "a/b")
-    expect(Some("a/b"))(StringArg decode "a%2Fb")
-  }
+  def createUrl(path: Seq[String]): String =
+    path.map(urlEncode(_, "utf-8")).mkString("/", "/", "")
   
 }
+
+case class Response(val content: String)
