@@ -17,21 +17,29 @@
 package bigtop
 package routes
 
+import java.net.URLEncoder.{encode => urlEncode}
+
+import net.liftweb.http.{Req, LiftResponse}
 import HListOps._
 
 class Route[Res <: HList](
   site: Site,
-  path: Path { type Result = Res },
-  fn: (Res) => Response
+  path: Path { type Inner = Res },
+  fn: (Res) => LiftResponse
 ) {
   
   site.addRoute(this)
   
-  def dispatch(req: Request): Option[Response] =
-    path.decode(req.path).map(fn)
+  def isDefinedAt(req: Req): Boolean =
+    path.canDecode(req.path.partPath)
+
+  def apply(req: Req): LiftResponse =
+    fn(path.decode(req.path.partPath).value)
   
   def url(args: Res) =
-    Request.createUrl(path.encode(args))
+    path.encode(args).
+         map(urlEncode(_, "utf-8")).
+         mkString("/", "/", "")
 
   def apply(args: Res) =
     fn(args)
@@ -40,8 +48,8 @@ class Route[Res <: HList](
 
 case class Route0(
   val site: Site,
-  val path: Path { type Result = HNil },
-  val fn: () => Response
+  val path: Path { type Inner = HNil },
+  val fn: () => LiftResponse
 ) extends Route[HNil](site, path, hlistFunction0(fn)) {
 
   def url(): String =
@@ -54,8 +62,8 @@ case class Route0(
 
 case class Route1[A](
   val site: Site,
-  val path: Path { type Result = HCons[A, HNil] },
-  val fn: (A) => Response
+  val path: Path { type Inner = HCons[A, HNil] },
+  val fn: (A) => LiftResponse
 ) extends Route(site, path, hlistFunction1(fn)) {
 
   def url(a: A): String =
@@ -68,8 +76,8 @@ case class Route1[A](
 
 case class Route2[A, B](
   val site: Site,
-  val path: Path { type Result = HCons[A, HCons[B, HNil]] },
-  val fn: (A, B) => Response
+  val path: Path { type Inner = HCons[A, HCons[B, HNil]] },
+  val fn: (A, B) => LiftResponse
 ) extends Route(site, path, hlistFunction2(fn)) {
 
   def url(a: A, b: B): String =
@@ -82,8 +90,8 @@ case class Route2[A, B](
 
 case class Route3[A, B, C](
   val site: Site,
-  val path: Path { type Result = HCons[A, HCons[B, HCons[C, HNil]]] },
-  val fn: (A, B, C) => Response
+  val path: Path { type Inner = HCons[A, HCons[B, HCons[C, HNil]]] },
+  val fn: (A, B, C) => LiftResponse
 ) extends Route(site, path, hlistFunction3(fn)) {
 
   def url(a: A, b: B, c: C): String =
@@ -96,8 +104,8 @@ case class Route3[A, B, C](
 
 case class Route4[A, B, C, D](
   val site: Site,
-  val path: Path { type Result = HCons[A, HCons[B, HCons[C, HCons[D, HNil]]]] },
-  val fn: (A, B, C, D) => Response
+  val path: Path { type Inner = HCons[A, HCons[B, HCons[C, HCons[D, HNil]]]] },
+  val fn: (A, B, C, D) => LiftResponse
 ) extends Route(site, path, hlistFunction4(fn)) {
 
   def url(a: A, b: B, c: C, d: D): String =
@@ -110,8 +118,8 @@ case class Route4[A, B, C, D](
 
 case class Route5[A, B, C, D, E](
   val site: Site,
-  val path: Path { type Result = HCons[A, HCons[B, HCons[C, HCons[D, HCons[E, HNil]]]]] },
-  val fn: (A, B, C, D, E) => Response
+  val path: Path { type Inner = HCons[A, HCons[B, HCons[C, HCons[D, HCons[E, HNil]]]]] },
+  val fn: (A, B, C, D, E) => LiftResponse
 ) extends Route(site, path, hlistFunction5(fn)) {
 
   def url(a: A, b: B, c: C, d: D, e: E): String =

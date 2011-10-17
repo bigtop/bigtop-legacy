@@ -17,6 +17,7 @@
 package bigtop
 package routes
 
+import net.liftweb.http.Req
 import org.specs._
 
 class SiteSpec extends Specification {
@@ -34,39 +35,38 @@ class SiteSpec extends Specification {
     // Implementation:
 
     def doAdd(a: Int, b: Int) =
-      Response("%s + %s = %s".format(a, b, a + b))
+      TestResponse("%s + %s = %s".format(a, b, a + b))
   
     def doMultiply(a: Int, b: Int) =
-      Response("%s * %s = %s".format(a, b, a * b))
+      TestResponse("%s * %s = %s".format(a, b, a * b))
   
     def doSquare(a: Int) =
       multiply(a, a)
 
     def doRepeat(a: String, b: Int) =
-      Response("%s * %s = %s".format(a, b, a * b))
+      TestResponse("%s * %s = %s".format(a, b, a * b))
   
     def doAppend(a: List[String]) =
-      Response("append(%s) = %s".format(a, a.mkString))
+      TestResponse("append(%s) = %s".format(a, a.mkString))
     
   }
   
-  "site dispatches to the correct route" in {
-    Calculator.dispatch(Request("/add/1/to/2"))         must beSome(Response("1 + 2 = 3"))
-    Calculator.dispatch(Request("/multiply/3/by/4"))    must beSome(Response("3 * 4 = 12"))
-    Calculator.dispatch(Request("/square/5"))           must beSome(Response("5 * 5 = 25"))
-    Calculator.dispatch(Request("/repeat/abc/2/times")) must beSome(Response("abc * 2 = abcabc"))
-    Calculator.dispatch(Request("/append/abc/def/ghi")) must beSome(Response("append(List(abc, def, ghi)) = abcdefghi"))
-    Calculator.dispatch(Request("/foo"))                must beNone
+  "site applies to the correct route" in {
+    Calculator(TestRequest("/add/1/to/2"))         must matchResponse(TestResponse("1 + 2 = 3"))
+    Calculator(TestRequest("/multiply/3/by/4"))    must matchResponse(TestResponse("3 * 4 = 12"))
+    Calculator(TestRequest("/square/5"))           must matchResponse(TestResponse("5 * 5 = 25"))
+    Calculator(TestRequest("/repeat/abc/2/times")) must matchResponse(TestResponse("abc * 2 = abcabc"))
+    Calculator(TestRequest("/append/abc/def/ghi")) must matchResponse(TestResponse("append(List(abc, def, ghi)) = abcdefghi"))
   }
 
   "routes can be invoked directly" in {
     import HListOps._
     
-    Calculator.add(1, 2)                         mustEqual Response("1 + 2 = 3")
-    Calculator.multiply(3, 4)                    mustEqual Response("3 * 4 = 12")
-    Calculator.square(5)                         mustEqual Response("5 * 5 = 25")
-    Calculator.repeat("abc", 2)                  mustEqual Response("abc * 2 = abcabc")
-    Calculator.append(List("abc", "def", "ghi")) mustEqual Response("append(List(abc, def, ghi)) = abcdefghi")
+    Calculator.add(1, 2)                         must matchResponse(TestResponse("1 + 2 = 3"))
+    Calculator.multiply(3, 4)                    must matchResponse(TestResponse("3 * 4 = 12"))
+    Calculator.square(5)                         must matchResponse(TestResponse("5 * 5 = 25"))
+    Calculator.repeat("abc", 2)                  must matchResponse(TestResponse("abc * 2 = abcabc"))
+    Calculator.append(List("abc", "def", "ghi")) must matchResponse(TestResponse("append(List(abc, def, ghi)) = abcdefghi"))
   }
   
   "routes produce the correct urls" in {

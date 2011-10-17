@@ -17,46 +17,6 @@
 package bigtop
 package routes
 
-trait Arg[X] {
-  
-  type Outer = String
-  type Inner = X
+import net.liftweb.http.{Req,LiftResponse}
 
-  def canDecode(a: Outer): Boolean
-  
-  def decode(a: Outer): Inner
-  
-  def encode(b: Inner): Outer
-  
-}
-
-case object IntArg extends Arg[Int] {
-  
-  def canDecode(in: String) =
-    try {
-      in.toInt
-      true
-    } catch {
-      case exn: NumberFormatException => false
-    }
-    
-  def decode(in: String) =
-    in.toInt
-
-  def encode(in: Int) =
-    in.toString
-  
-}
-
-case object StringArg extends Arg[String] {
-  
-  def canDecode(in: String) =
-    true
-  
-  def encode(in: String) =
-    in
-  
-  def decode(in: String) =
-    in
-  
-}
+trait RequestHandler extends PartialFunction[Req, LiftResponse]
