@@ -50,7 +50,6 @@ class BigtopProject(info: ProjectInfo) extends ParentProject(info) {
   lazy val liftWebkit = "net.liftweb" %% "lift-webkit" % liftVersion % "compile"
   lazy val postgresql = "postgresql" % "postgresql" % "8.4-702.jdbc4"
   lazy val rogue = "com.foursquare" %% "rogue" % rogueVersion withSources()
-  lazy val specs = "org.scala-tools.testing" %% "specs" % "1.6.9" % "test"
   
   lazy val scalaCheck =
     buildScalaVersion match {
@@ -62,6 +61,12 @@ class BigtopProject(info: ProjectInfo) extends ParentProject(info) {
     buildScalaVersion match {
       case "2.8.1" => "org.scalatest" % "scalatest_2.8.1" % "1.5" % "test"
       case _       => "org.scalatest" % "scalatest_2.9.0" % "1.6.1" % "test"
+    }
+  
+  lazy val specs =
+    buildScalaVersion match {
+      case "2.8.1" => "org.scala-tools.testing" %% "specs" % "1.6.6" % "test"
+      case _       => "org.scala-tools.testing" %% "specs" % "1.6.9" % "test"
     }
   
   // Subprojects --------------------------------
