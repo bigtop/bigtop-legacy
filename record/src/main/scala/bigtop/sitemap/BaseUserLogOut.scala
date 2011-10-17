@@ -33,6 +33,6 @@ class BaseUserLogOut[T <: BaseUser[T]](
   () => {
     meta.logOut
     S.notice("You are now logged out")
-    Full(new RedirectResponse(nextUrl()))
+    Full(RedirectResponse(nextUrl()))
   }
 )

@@ -33,6 +33,6 @@ class BaseUserRestoreIdentity[T <: BaseUser[T]](
   () => {
     meta.restoreIdentity
     S.notice("Identity restored")
-    Full(new RedirectResponse(nextUrl()))
+    Full(RedirectResponse(nextUrl()))
   }
 )

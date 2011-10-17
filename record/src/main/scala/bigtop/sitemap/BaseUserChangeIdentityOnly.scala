@@ -33,5 +33,5 @@ class BaseUserChangeIdentityOnly[T <: BaseUser[T]](
   () => meta.realUser.map(_.canChangeIdentity).getOrElse(false),
   () => {
     S.error("You must be logged in to view that page")
-    new RedirectResponse(elseUrl())
+    RedirectResponse(elseUrl())
   })
