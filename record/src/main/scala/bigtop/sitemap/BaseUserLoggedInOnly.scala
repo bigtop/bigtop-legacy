@@ -33,5 +33,5 @@ class BaseUserLoggedInOnly[T <: BaseUser[T]](
   () => meta.isLoggedIn,
   () => {
     S.error("You must be logged in to view that page")
-    new RedirectResponse(elseUrl())
+    RedirectResponse(elseUrl())
   })
