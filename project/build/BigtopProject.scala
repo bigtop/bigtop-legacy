@@ -28,9 +28,15 @@ class BigtopProject(info: ProjectInfo) extends ParentProject(info) {
 
   // Libraries ----------------------------------
 
-  val liftVersion = "2.4-M2"
+  val liftVersion = "2.4-M4"
   
-  val rogueVersion = "1.0.14-LIFT-2.4-M2"
+  // lazy val liftVersion =
+  //   buildScalaVersion match {
+  //     case "2.8.1" => "2.4-M2"
+  //     case _       => "2.4-M4"
+  //   }
+  
+  val rogueVersion = "1.0.26"
   
   lazy val bcrypt = "org.mindrot" % "jbcrypt" % "0.3m"
   lazy val c3p0 = "c3p0" % "c3p0" % "0.9.1.2"
@@ -64,9 +70,9 @@ class BigtopProject(info: ProjectInfo) extends ParentProject(info) {
   lazy val debug = bigtopProject("debug", liftCommon, liftWebkit, scalatest)()
   lazy val record = bigtopProject("record", liftCommon, liftWebkit, liftRecord, liftSquerylRecord, scalatest)(debug, core)
   lazy val report = bigtopProject("report", liftCommon, liftWebkit, scalatest)(debug, core)
-  lazy val routes = bigtopProject("routes", specs)()
-  lazy val squeryl = bigtopProject("squeryl", liftCommon, liftWebkit, liftSquerylRecord, postgresql, c3p0, scalatest)(debug, core)
-  lazy val mongodb = bigtopProject("mongodb", liftCommon, liftWebkit, liftMongodb, liftMongodbRecord, rogue, scalatest)(debug, core)
+  lazy val routes = bigtopProject("routes", liftCommon, liftWebkit, specs)(debug, core)
+  lazy val squeryl = bigtopProject("squeryl", liftCommon, liftWebkit, liftSquerylRecord, postgresql, c3p0, scalatest)(debug, core, record)
+  lazy val mongodb = bigtopProject("mongodb", liftCommon, liftWebkit, liftMongodb, liftMongodbRecord, rogue, scalatest)(debug, core, record)
   lazy val util = bigtopProject("util", liftCommon, liftWebkit, scalatest)(debug, core)
   
   lazy val doc = project(".", "doc", new BigtopDocProject(_))
