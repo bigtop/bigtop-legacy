@@ -17,84 +17,93 @@
 package bigtop
 package routes
 
+/**
+ * This Wrapper is here purely to please the type inference engine.
+ *
+ * The Path.decode() method should ideally return a Result,
+ * but this can cause cyclic type inference errors.
+ *
+ * As a workaround, we wrap each return value of Path.decode()
+ * in an instance of this marker class. This silences the errors
+ * and allows us to go about our business.
+ */ 
+case class Wrapper[+T](value: T)
+
+/**
+ * A URL path pattern.
+ */
 sealed trait Path {
   
-  /** The type of data we're extracting from the path, i.e. ignoring segments that aren't arguments. */
-  type Result <: HList
+  type Inner <: HList
+
+  def canDecode(path: List[String]): Boolean
   
-  /** Decode a URL path into an argument list. */
-  def decode(path: List[String]): Option[Result]
+  def decode(path: List[String]): Wrapper[Inner]
   
-  /** Encode an HList as a URL path. */
-  def encode(args: Result): List[String]
+  def encode(args: Inner): List[String]
   
 }
 
 case class PLiteral[T <: Path](val head: String, val tail: T) extends Path {
   
-  type Result = tail.Result
+  type Inner = tail.Inner
   
-  def decode(path: List[String]): Option[Result] =
-    path match {
-      case Nil => None
-      case h :: t =>
-        if(h == head) tail.decode(t) else None
-    }
+  def canDecode(path: List[String]): Boolean =
+    !path.isEmpty && path.head == head && tail.canDecode(path.tail)
+  
+  def decode(path: List[String]): Wrapper[Inner] =
+    tail.decode(path.tail)
     
-  def encode(args: Result): List[String] =
+  def encode(args: Inner): List[String] =
     head :: tail.encode(args)
   
   def :/:(arg: String) =
     PLiteral(arg, this)
   
   def :/:[T](arg: Arg[T]) =
-    PArg(arg, this)
+    PMatch(arg, this)
   
 }
 
-case class PArg[H, T <: Path](val head: Arg[H], val tail: T) extends Path {
+case class PMatch[H, T <: Path](val head: Arg[H], val tail: T) extends Path {
   
-  type Result = HCons[H, tail.Result]
+  type Inner = HCons[H, tail.Inner]
+
+  def canDecode(path: List[String]): Boolean =
+    !path.isEmpty && head.canDecode(path.head) && tail.canDecode(path.tail)
   
-  def decode(path: List[String]): Option[Result] =
-    path match {
-      case Nil => None
-      case h :: t =>
-        for {
-          h2 <- head.decode(h)
-          t2 <- tail.decode(t)
-        } yield HCons(h2, t2)
-    }
+  def decode(path: List[String]): Wrapper[Inner] =
+    Wrapper(HCons(head.decode(path.head), tail.decode(path.tail).value))
   
-  def encode(args: Result): List[String] =
+  def encode(args: Inner): List[String] =
     head.encode(args.head) :: tail.encode(args.tail)
   
   def :/:(arg: String) =
     PLiteral(arg, this)
   
   def :/:[T](arg: Arg[T]) =
-    PArg(arg, this)
+    PMatch(arg, this)
   
 }
 
 sealed abstract class PNil extends Path {
   
-  type Result = HNil
+  type Inner = HNil
   
-  def decode(path: List[String]): Option[Result] =
-    path match {
-      case Nil => Some(HNil)
-      case _ => None
-    }
+  def canDecode(path: List[String]): Boolean =
+    path.isEmpty
   
-  def encode(args: Result): List[String] =
+  def decode(path: List[String]): Wrapper[Inner] =
+    Wrapper(HNil)
+  
+  def encode(args: Inner): List[String] =
     Nil
   
   def :/:(arg: String) =
     PLiteral(arg, this)
   
   def :/:[T](arg: Arg[T]) =
-    PArg(arg, this)
+    PMatch(arg, this)
   
 }
 
@@ -102,19 +111,22 @@ case object PNil extends PNil
 
 sealed abstract class PAny extends Path {
   
-  type Result = HCons[List[String], HNil]
+  type Inner = HCons[List[String], HNil]
   
-  def decode(path: List[String]): Option[Result] =
-    Some(path :: HNil)
+  def canDecode(path: List[String]): Boolean =
+    true
   
-  def encode(args: Result): List[String] =
+  def decode(path: List[String]): Wrapper[Inner] =
+    Wrapper(path :: HNil)
+
+  def encode(args: Inner): List[String] =
     args.head
   
   def :/:(arg: String) =
     PLiteral(arg, this)
   
   def :/:[T](arg: Arg[T]) =
-    PArg(arg, this)
+    PMatch(arg, this)
   
 }
 

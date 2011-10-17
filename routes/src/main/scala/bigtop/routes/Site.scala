@@ -17,7 +17,9 @@
 package bigtop
 package routes
 
-trait Site extends RouteBuilder {
+import net.liftweb.http.{Req, LiftResponse}
+
+trait Site extends RequestHandler with RouteBuilder{
 
   var routes: List[Route[_]] =
     Nil
@@ -30,14 +32,13 @@ trait Site extends RouteBuilder {
   def addRoute(route: Route[_]): Unit =
     routes = routes :+ route
   
-  def dispatch(req: Request): Option[Response] = 
-    dispatch(req, routes)
+  def isDefinedAt(req: Req): Boolean =
+    routes.find(_.isDefinedAt(req)).isDefined
   
-  private def dispatch(req: Request, routes: List[Route[_]]): Option[Response] =
-    routes match {
-      case Nil => None
-      
-      case head :: tail =>
-        head.dispatch(req).orElse(dispatch(req, tail))
+  def apply(req: Req): LiftResponse = 
+    routes.find(_.isDefinedAt(req)) match {
+      case Some(route) => route(req)
+      case None => throw new Exception("Failed to find a matching route for " + req)
     }
+  
 }
