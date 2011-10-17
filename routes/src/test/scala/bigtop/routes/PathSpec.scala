@@ -31,7 +31,7 @@ class PathSpec extends Specification {
   }
   
   "Nil-terminated path: decode works as expected" in {
-    nilPath.decode(List("a", "abc", "b", "123", "c")) mustEqual Wrapper("abc" :: 123 :: HNil)
+    nilPath.decode(List("a", "abc", "b", "123", "c")) must beSome("abc" :: 123 :: HNil)
   }
     
   "Nil-terminated path: encode works as expected" in {
@@ -49,8 +49,8 @@ class PathSpec extends Specification {
   }
   
   "Any-terminated path: decode works as expected" in {
-    restPath.decode(List("a", "abc", "b", "123", "c")) mustEqual Wrapper("abc" :: 123 :: List() :: HNil)
-    restPath.decode(List("a", "abc", "b", "123", "c", "d", "e")) mustEqual Wrapper("abc" :: 123 :: List("d", "e") :: HNil)
+    restPath.decode(List("a", "abc", "b", "123", "c")) must beSome("abc" :: 123 :: List() :: HNil)
+    restPath.decode(List("a", "abc", "b", "123", "c", "d", "e")) must beSome("abc" :: 123 :: List("d", "e") :: HNil)
   }
   
   "Any-terminated path: encode works as expected" in {

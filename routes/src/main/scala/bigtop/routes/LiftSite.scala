@@ -17,9 +17,22 @@
 package bigtop
 package routes
 
-import net.liftweb.http.{Req, LiftResponse}
+import net.liftweb.common.Box
+import net.liftweb.http.{Req, LiftResponse, LiftRules}
 
 trait LiftSite extends Site[Req, LiftResponse] {
+    
+  /** Lift-compatible DispatchPF function. */
+  def dispatchPF: LiftRules.DispatchPF =
+    new LiftRules.DispatchPF {
+      
+      def isDefinedAt(req: Req) =
+        LiftSite.this.isDefinedAt(req)
+      
+      def apply(req: Req) =
+        () => Box.option2Box(LiftSite.this.apply(req))
+      
+    }
   
   def wrapRequest(req: Req): Request =
     new Request { def path = req.path.partPath }

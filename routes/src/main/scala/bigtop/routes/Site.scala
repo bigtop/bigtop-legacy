@@ -35,7 +35,7 @@ trait Site[FrameworkRequest, FrameworkResponse] extends RouteBuilder[FrameworkRe
   def isDefinedAt(req: FrameworkRequest): Boolean =
     routes.find(_.isDefinedAt(wrapRequest(req))).isDefined
   
-  def apply(frameworkReq: FrameworkRequest): FrameworkResponse = {
+  def apply(frameworkReq: FrameworkRequest): Option[FrameworkResponse] = {
     val req = wrapRequest(frameworkReq)
     
     routes.find(_.isDefinedAt(req)) match {

@@ -17,33 +17,16 @@
 package bigtop
 package routes
 
-trait Arg[X] extends Bidi {
+trait Bidi {
   
-  type Outer = String
-  type Inner = X
+  type Outer
+  type Inner
   
-}
+  def canDecode(a: Outer): Boolean =
+    decode(a).isDefined
   
-case object IntArg extends Arg[Int] {
+  def decode(a: Outer): Option[Inner]
   
-  def decode(in: String) =
-    try {
-      Some(in.toInt)
-    } catch {
-      case exn: NumberFormatException => None
-    }
+  def encode(b: Inner): Outer
 
-  def encode(in: Int) =
-    in.toString
-  
-}
-
-case object StringArg extends Arg[String] {
-  
-  def decode(in: String) =
-    Some(in)
-  
-  def encode(in: String) =
-    in
-  
 }

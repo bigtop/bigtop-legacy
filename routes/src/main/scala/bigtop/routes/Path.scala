@@ -18,42 +18,25 @@ package bigtop
 package routes
 
 /**
- * This Wrapper is here purely to please the type inference engine.
- *
- * The Path.decode() method should ideally return a Result,
- * but this can cause cyclic type inference errors.
- *
- * As a workaround, we wrap each return value of Path.decode()
- * in an instance of this marker class. This silences the errors
- * and allows us to go about our business.
- */ 
-case class Wrapper[+T](value: T)
-
-/**
  * A URL path pattern.
  */
-sealed trait Path {
+sealed trait Path extends Bidi {
   
+  type Outer = List[String]
   type Inner <: HList
 
-  def canDecode(path: List[String]): Boolean
-  
-  def decode(path: List[String]): Wrapper[Inner]
-  
-  def encode(args: Inner): List[String]
-  
 }
 
 case class PLiteral[T <: Path](val head: String, val tail: T) extends Path {
   
   type Inner = tail.Inner
   
-  def canDecode(path: List[String]): Boolean =
+  override def canDecode(path: List[String]): Boolean =
     !path.isEmpty && path.head == head && tail.canDecode(path.tail)
   
-  def decode(path: List[String]): Wrapper[Inner] =
+  def decode(path: List[String]): Option[Inner] =
     tail.decode(path.tail)
-    
+  
   def encode(args: Inner): List[String] =
     head :: tail.encode(args)
   
@@ -69,11 +52,14 @@ case class PMatch[H, T <: Path](val head: Arg[H], val tail: T) extends Path {
   
   type Inner = HCons[H, tail.Inner]
 
-  def canDecode(path: List[String]): Boolean =
+  override def canDecode(path: List[String]): Boolean =
     !path.isEmpty && head.canDecode(path.head) && tail.canDecode(path.tail)
   
-  def decode(path: List[String]): Wrapper[Inner] =
-    Wrapper(HCons(head.decode(path.head), tail.decode(path.tail).value))
+  def decode(path: List[String]): Option[Inner] =
+    for {
+      h <- head.decode(path.head)
+      t <- tail.decode(path.tail)
+    } yield HCons(h, t)
   
   def encode(args: Inner): List[String] =
     head.encode(args.head) :: tail.encode(args.tail)
@@ -90,11 +76,11 @@ sealed abstract class PNil extends Path {
   
   type Inner = HNil
   
-  def canDecode(path: List[String]): Boolean =
+  override def canDecode(path: List[String]): Boolean =
     path.isEmpty
   
-  def decode(path: List[String]): Wrapper[Inner] =
-    Wrapper(HNil)
+  def decode(path: List[String]): Option[Inner] =
+    if(path.isEmpty) Some(HNil) else None
   
   def encode(args: Inner): List[String] =
     Nil
@@ -113,11 +99,11 @@ sealed abstract class PAny extends Path {
   
   type Inner = HCons[List[String], HNil]
   
-  def canDecode(path: List[String]): Boolean =
+  override def canDecode(path: List[String]): Boolean =
     true
   
-  def decode(path: List[String]): Wrapper[Inner] =
-    Wrapper(path :: HNil)
+  def decode(path: List[String]): Option[Inner] =
+    Some(path :: HNil)
 
   def encode(args: Inner): List[String] =
     args.head

@@ -79,4 +79,21 @@ trait LiftHttp {
     }
   }
 
+  case class matchOptionalResponse(a: Option[LiftResponse]) extends Matcher[Option[LiftResponse]]() {
+    def apply(b: => Option[LiftResponse]) = {
+      val matched =
+        (a, b) match {
+          case (Some(a: InMemoryResponse), Some(b: InMemoryResponse)) =>
+            a.code == b.code &&
+            a.headers == b.headers &&
+            a.cookies == b.cookies &&
+            new String(b.data, "UTF-8") == new String(b.data, "UTF-8")
+      
+          case _ => false
+        }
+
+      (matched, "responses matched", "responses did not match")
+    }
+  }
+
 }

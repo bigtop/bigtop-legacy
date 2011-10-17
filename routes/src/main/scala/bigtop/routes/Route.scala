@@ -29,8 +29,8 @@ class Route[Res <: HList, FrameworkResponse](
   def isDefinedAt(req: Request): Boolean =
     path.canDecode(req.path)
 
-  def apply(req: Request): FrameworkResponse =
-    fn(path.decode(req.path).value)
+  def apply(req: Request): Option[FrameworkResponse] =
+    path.decode(req.path).map(fn)
   
   def url(args: Res) =
     path.encode(args).
