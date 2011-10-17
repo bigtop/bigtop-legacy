@@ -17,11 +17,9 @@
 package bigtop
 package routes
 
-import net.liftweb.http.{Req, LiftResponse}
-
-trait Site extends RequestHandler with RouteBuilder{
-
-  var routes: List[Route[_]] =
+trait Site[FrameworkRequest, FrameworkResponse] extends RouteBuilder[FrameworkRequest, FrameworkResponse] {
+  
+  var routes: List[Route[_, FrameworkResponse]] =
     Nil
   
   val end = PNil
@@ -29,16 +27,23 @@ trait Site extends RequestHandler with RouteBuilder{
   
   implicit val site = this
   
-  def addRoute(route: Route[_]): Unit =
+  def addRoute[Rt <: Route[_, FrameworkResponse]](route: Rt): Rt = {
     routes = routes :+ route
+    route
+  }
   
-  def isDefinedAt(req: Req): Boolean =
-    routes.find(_.isDefinedAt(req)).isDefined
+  def isDefinedAt(req: FrameworkRequest): Boolean =
+    routes.find(_.isDefinedAt(wrapRequest(req))).isDefined
   
-  def apply(req: Req): LiftResponse = 
+  def apply(frameworkReq: FrameworkRequest): FrameworkResponse = {
+    val req = wrapRequest(frameworkReq)
+    
     routes.find(_.isDefinedAt(req)) match {
-      case Some(route) => route(req)
+      case Some(route) => route.apply(req)
       case None => throw new Exception("Failed to find a matching route for " + req)
     }
+  }
+  
+  def wrapRequest(req: FrameworkRequest): Request
   
 }

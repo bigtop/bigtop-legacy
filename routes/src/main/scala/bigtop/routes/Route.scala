@@ -19,22 +19,18 @@ package routes
 
 import java.net.URLEncoder.{encode => urlEncode}
 
-import net.liftweb.http.{Req, LiftResponse}
 import HListOps._
 
-class Route[Res <: HList](
-  site: Site,
+class Route[Res <: HList, FrameworkResponse](
   path: Path { type Inner = Res },
-  fn: (Res) => LiftResponse
+  fn: (Res) => FrameworkResponse
 ) {
   
-  site.addRoute(this)
-  
-  def isDefinedAt(req: Req): Boolean =
-    path.canDecode(req.path.partPath)
+  def isDefinedAt(req: Request): Boolean =
+    path.canDecode(req.path)
 
-  def apply(req: Req): LiftResponse =
-    fn(path.decode(req.path.partPath).value)
+  def apply(req: Request): FrameworkResponse =
+    fn(path.decode(req.path).value)
   
   def url(args: Res) =
     path.encode(args).
@@ -46,11 +42,10 @@ class Route[Res <: HList](
 
 }
 
-case class Route0(
-  val site: Site,
+case class Route0[FrameworkResponse](
   val path: Path { type Inner = HNil },
-  val fn: () => LiftResponse
-) extends Route[HNil](site, path, hlistFunction0(fn)) {
+  val fn: () => FrameworkResponse
+) extends Route[HNil, FrameworkResponse](path, hlistFunction0(fn)) {
 
   def url(): String =
     url(HNil)
@@ -60,11 +55,10 @@ case class Route0(
 
 }
 
-case class Route1[A](
-  val site: Site,
+case class Route1[A, FrameworkResponse](
   val path: Path { type Inner = HCons[A, HNil] },
-  val fn: (A) => LiftResponse
-) extends Route(site, path, hlistFunction1(fn)) {
+  val fn: (A) => FrameworkResponse
+) extends Route(path, hlistFunction1(fn)) {
 
   def url(a: A): String =
     url(a :: HNil)
@@ -74,11 +68,10 @@ case class Route1[A](
 
 }
 
-case class Route2[A, B](
-  val site: Site,
+case class Route2[A, B, FrameworkResponse](
   val path: Path { type Inner = HCons[A, HCons[B, HNil]] },
-  val fn: (A, B) => LiftResponse
-) extends Route(site, path, hlistFunction2(fn)) {
+  val fn: (A, B) => FrameworkResponse
+) extends Route(path, hlistFunction2(fn)) {
 
   def url(a: A, b: B): String =
     url(a :: b :: HNil)
@@ -88,11 +81,10 @@ case class Route2[A, B](
 
 }
 
-case class Route3[A, B, C](
-  val site: Site,
+case class Route3[A, B, C, FrameworkResponse](
   val path: Path { type Inner = HCons[A, HCons[B, HCons[C, HNil]]] },
-  val fn: (A, B, C) => LiftResponse
-) extends Route(site, path, hlistFunction3(fn)) {
+  val fn: (A, B, C) => FrameworkResponse
+) extends Route(path, hlistFunction3(fn)) {
 
   def url(a: A, b: B, c: C): String =
     url(a :: b :: c :: HNil)
@@ -102,11 +94,10 @@ case class Route3[A, B, C](
 
 }
 
-case class Route4[A, B, C, D](
-  val site: Site,
+case class Route4[A, B, C, D, FrameworkResponse](
   val path: Path { type Inner = HCons[A, HCons[B, HCons[C, HCons[D, HNil]]]] },
-  val fn: (A, B, C, D) => LiftResponse
-) extends Route(site, path, hlistFunction4(fn)) {
+  val fn: (A, B, C, D) => FrameworkResponse
+) extends Route(path, hlistFunction4(fn)) {
 
   def url(a: A, b: B, c: C, d: D): String =
     url(a :: b :: c :: d :: HNil)
@@ -116,11 +107,10 @@ case class Route4[A, B, C, D](
 
 }
 
-case class Route5[A, B, C, D, E](
-  val site: Site,
+case class Route5[A, B, C, D, E, FrameworkResponse](
   val path: Path { type Inner = HCons[A, HCons[B, HCons[C, HCons[D, HCons[E, HNil]]]]] },
-  val fn: (A, B, C, D, E) => LiftResponse
-) extends Route(site, path, hlistFunction5(fn)) {
+  val fn: (A, B, C, D, E) => FrameworkResponse
+) extends Route(path, hlistFunction5(fn)) {
 
   def url(a: A, b: B, c: C, d: D, e: E): String =
     url(a :: b :: c :: d :: e :: HNil)

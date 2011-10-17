@@ -17,71 +17,67 @@
 package bigtop
 package routes
 
-import net.liftweb.http.LiftResponse
-
-trait RouteBuilder {
+trait RouteBuilder[FrameworkRequest, FrameworkResponse] {
   
   trait PimpedPath {
     type Fn
-    type Rt <: Route[_]
+    type Rt <: Route[_, FrameworkResponse]
 
-    def >>(fn: Fn)(implicit site: Site): Rt
+    def >>(fn: Fn)(implicit site: Site[FrameworkRequest, FrameworkResponse]): Rt
   }
   
   implicit def pimpPath0(path: Path { type Inner = HNil }) =
     new PimpedPath {
-      type Fn = () => LiftResponse
-      type Rt = Route0
+      type Fn = () => FrameworkResponse
+      type Rt = Route0[FrameworkResponse]
       
-      def >>(fn: Fn)(implicit site: Site) =
-        Route0(site, path, fn)
+      def >>(fn: Fn)(implicit site: Site[FrameworkRequest, FrameworkResponse]) =
+        site.addRoute(Route0(path, fn))
     }
   
   implicit def pimpPath1[A](path: Path { type Inner = HCons[A, HNil] }) =
     new PimpedPath {
-      type Fn = (A) => LiftResponse
-      type Rt = Route1[A]
+      type Fn = (A) => FrameworkResponse
+      type Rt = Route1[A, FrameworkResponse]
       
-      def >>(fn: Fn)(implicit site: Site) =
-        Route1(site, path, fn)
+      def >>(fn: Fn)(implicit site: Site[FrameworkRequest, FrameworkResponse]) =
+        site.addRoute(Route1(path, fn))
     }
   
   implicit def pimpPath2[A, B](path: Path { type Inner = HCons[A, HCons[B, HNil]] }) =
     new PimpedPath {
-      type Fn = (A, B) => LiftResponse
-      type Rt = Route2[A, B]
+      type Fn = (A, B) => FrameworkResponse
+      type Rt = Route2[A, B, FrameworkResponse]
 
-      def >>(fn: Fn)(implicit site: Site) =
-        Route2(site, path, fn)
+      def >>(fn: Fn)(implicit site: Site[FrameworkRequest, FrameworkResponse]) =
+        site.addRoute(Route2(path, fn))
     }
   
   implicit def pimpPath3[A, B, C](path: Path { type Inner = HCons[A, HCons[B, HCons[C, HNil]]] }) =
     new PimpedPath {
-      type Fn = (A, B, C) => LiftResponse
-      type Rt = Route3[A, B, C]
+      type Fn = (A, B, C) => FrameworkResponse
+      type Rt = Route3[A, B, C, FrameworkResponse]
 
-      def >>(fn: Fn)(implicit site: Site) =
-        Route3(site, path, fn)
+      def >>(fn: Fn)(implicit site: Site[FrameworkRequest, FrameworkResponse]) =
+        site.addRoute(Route3(path, fn))
     }
   
   implicit def pimpPath4[A, B, C, D](path: Path { type Inner = HCons[A, HCons[B, HCons[C, HCons[D, HNil]]]] }) =
     new PimpedPath {
-      type Fn = (A, B, C, D) => LiftResponse
-      type Rt = Route4[A, B, C, D]
+      type Fn = (A, B, C, D) => FrameworkResponse
+      type Rt = Route4[A, B, C, D, FrameworkResponse]
 
-      def >>(fn: Fn)(implicit site: Site) =
-        Route4(site, path, fn)
+      def >>(fn: Fn)(implicit site: Site[FrameworkRequest, FrameworkResponse]) =
+        site.addRoute(Route4(path, fn))
     }
   
   implicit def pimpPath5[A, B, C, D, E](path: Path { type Inner = HCons[A, HCons[B, HCons[C, HCons[D, HCons[E, HNil]]]]] }) =
     new PimpedPath {
-      type Fn = (A, B, C, D, E) => LiftResponse
-      type Rt = Route5[A, B, C, D, E]
+      type Fn = (A, B, C, D, E) => FrameworkResponse
+      type Rt = Route5[A, B, C, D, E, FrameworkResponse]
 
-      def >>(fn: Fn)(implicit site: Site) =
-        Route5(site, path, fn)
+      def >>(fn: Fn)(implicit site: Site[FrameworkRequest, FrameworkResponse]) =
+        site.addRoute(Route5(path, fn))
     }
 
 }
-
-object RouteBuilder extends RouteBuilder

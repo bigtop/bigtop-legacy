@@ -20,9 +20,9 @@ package routes
 import net.liftweb.http.Req
 import org.specs._
 
-class SiteSpec extends Specification {
+class LiftSiteSpec extends Specification with LiftHttp {
   
-  object Calculator extends Site {
+  object Calculator extends LiftSite {
   
     // Routing table:
 

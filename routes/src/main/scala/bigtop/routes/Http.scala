@@ -20,19 +20,26 @@ package routes
 import java.net.URLEncoder.{encode => urlEncode}
 import java.net.URLDecoder.{decode => urlDecode}
 
-case class Request(val path: List[String])
-
-object Request {
+/** A request that can be understood by Routes. Implemented as a wrapper for a web-framework-specific response type. */
+trait Request {
   
-  def apply(path: String): Request =
-    Request(path.split("/").
-                 toList.
-                 filterNot(_.trim == "").
-                 map(urlDecode(_, "utf-8")))
-  
-  def createUrl(path: Seq[String]): String =
-    path.map(urlEncode(_, "utf-8")).mkString("/", "/", "")
+  /** The path part of the URL, split on "/" characters and URL-decoded. */
+  def path: List[String]
   
 }
 
-case class Response(val content: String)
+/** A response returned by Routes. Implemented as a wrapper for a web-framework-specific response type. */
+trait Response
+
+object Request {
+  
+  // def apply(path: String): Request =
+  //   Request(path.split("/").
+  //                toList.
+  //                filterNot(_.trim == "").
+  //                map(urlDecode(_, "utf-8")))
+  
+  // def createUrl(path: Seq[String]): String =
+  //   path.map(urlEncode(_, "utf-8")).mkString("/", "/", "")
+  
+}
