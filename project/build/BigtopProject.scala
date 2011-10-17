@@ -30,12 +30,6 @@ class BigtopProject(info: ProjectInfo) extends ParentProject(info) {
 
   val liftVersion = "2.4-M4"
   
-  // lazy val liftVersion =
-  //   buildScalaVersion match {
-  //     case "2.8.1" => "2.4-M2"
-  //     case _       => "2.4-M4"
-  //   }
-  
   val rogueVersion = "1.0.26"
   
   lazy val bcrypt = "org.mindrot" % "jbcrypt" % "0.3m"
@@ -50,18 +44,26 @@ class BigtopProject(info: ProjectInfo) extends ParentProject(info) {
   lazy val liftWebkit = "net.liftweb" %% "lift-webkit" % liftVersion % "compile"
   lazy val postgresql = "postgresql" % "postgresql" % "8.4-702.jdbc4"
   lazy val rogue = "com.foursquare" %% "rogue" % rogueVersion withSources()
-  lazy val specs = "org.scala-tools.testing" %% "specs" % "1.6.9" % "test"
   
   lazy val scalaCheck =
     buildScalaVersion match {
       case "2.8.1" => "org.scala-tools.testing" %% "scalacheck" % "1.8" % "test"
+      case "2.8.2" => "org.scala-tools.testing" %% "scalacheck" % "1.8" % "test"
       case _       => "org.scala-tools.testing" %% "scalacheck" % "1.9" % "test"
     }
   
   lazy val scalatest =
     buildScalaVersion match {
       case "2.8.1" => "org.scalatest" % "scalatest_2.8.1" % "1.5" % "test"
+      case "2.8.2" => "org.scalatest" % "scalatest_2.8.1" % "1.5" % "test"
       case _       => "org.scalatest" % "scalatest_2.9.0" % "1.6.1" % "test"
+    }
+  
+  lazy val specs =
+    buildScalaVersion match {
+      case "2.8.1" => "org.scala-tools.testing" %% "specs" % "1.6.6" % "test"
+      case "2.8.2" => "org.scala-tools.testing" %% "specs" % "1.6.6" % "test"
+      case _       => "org.scala-tools.testing" %% "specs" % "1.6.9" % "test"
     }
   
   // Subprojects --------------------------------
