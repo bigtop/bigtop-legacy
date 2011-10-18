@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-package bigtop
-package routes
+package bigtop.routes.lift
 
 import java.net.URLDecoder.{decode => urlDecode}
 import net.liftweb.common.Empty
@@ -23,7 +22,7 @@ import net.liftweb.http._
 import org.specs.matcher.Matcher
 
 /** Helper methods for constructing and matching on Lift requests and responses. */
-trait LiftHttp {
+trait Http {
 
   object TestRequest {
 

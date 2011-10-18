@@ -14,36 +14,20 @@
  * limitations under the License.
  */
 
-package bigtop
-package routes
+package bigtop.routes.core
 
-trait Arg[X] extends Bidi {
-  
-  type Outer = String
-  type Inner = X
-  
-}
-  
-case object IntArg extends Arg[Int] {
-  
-  def decode(in: String) =
-    try {
-      Some(in.toInt)
-    } catch {
-      case exn: NumberFormatException => None
-    }
+import org.specs._
 
-  def encode(in: Int) =
-    in.toString
-  
-}
+class HListSpec extends Specification {
 
-case object StringArg extends Arg[String] {
+  "HLists can have heterogeneous arguments" in {
+    val list = 2.0 :: 1 :: HNil
+    
+    list.head mustEqual 2.0
+    list.tail mustEqual (1 :: HNil)
+    
+    list.tail.head mustEqual 1
+    list.tail.tail mustEqual HNil
+  }
   
-  def decode(in: String) =
-    Some(in)
-  
-  def encode(in: String) =
-    in
-  
-}
+} 

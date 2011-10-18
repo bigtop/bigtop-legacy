@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-package bigtop
-package routes
+package bigtop.routes.core
 
 object HListOps {
   

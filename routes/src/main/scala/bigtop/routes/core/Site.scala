@@ -14,27 +14,49 @@
  * limitations under the License.
  */
 
-package bigtop
-package routes
+package bigtop.routes.core
 
 trait Site[FrameworkRequest, FrameworkResponse] extends RouteBuilder[FrameworkRequest, FrameworkResponse] {
   
-  var routes: List[Route[_, FrameworkResponse]] =
+  /** Routes in this site in the order they should be visited in appply(). */
+  private var routes: List[Route[_, FrameworkResponse]] =
     Nil
   
+  /** Programmer-friendly alias for PNil. */
   val end = PNil
+
+  /** Programmer-friendly alias for PAny. */
   val any = PAny
   
   implicit val site = this
   
-  def addRoute[Rt <: Route[_, FrameworkResponse]](route: Rt): Rt = {
+  /**
+   * Add a Route to this Site.
+   *
+   * Return the same Route object that was supplied as an argument.
+   */
+  private[routes] def addRoute[Rt <: Route[_, FrameworkResponse]](route: Rt): Rt = {
     routes = routes :+ route
     route
   }
   
+  /**
+   * Perform a quick check to see if any of the Routes in this Site can respond to the supplied Request.
+   *
+   * This check skips any expensive computation, so it may return a false positive
+   * (i.e. isDefinedAt() returns true but apply() returns None).
+   * 
+   * However, it should never return a false negative
+   * (i.e. isDefinedAt() returns false and apply() returns Some).
+   */
   def isDefinedAt(req: FrameworkRequest): Boolean =
     routes.find(_.isDefinedAt(wrapRequest(req))).isDefined
   
+  /**
+   * Attempt to decode the supplied request and return an HTTP response.
+   * 
+   * Return None if the request cannot be decoded.
+   */
   def apply(frameworkReq: FrameworkRequest): Option[FrameworkResponse] = {
     val req = wrapRequest(frameworkReq)
     
@@ -44,6 +66,7 @@ trait Site[FrameworkRequest, FrameworkResponse] extends RouteBuilder[FrameworkRe
     }
   }
   
+  /** Convert an implementation-specific request into a routes Request. */
   def wrapRequest(req: FrameworkRequest): Request
   
 }

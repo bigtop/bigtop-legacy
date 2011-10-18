@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-package bigtop
-package routes
+package bigtop.routes.core
 
 import java.net.URLEncoder.{encode => urlEncode}
 import java.net.URLDecoder.{decode => urlDecode}
@@ -27,9 +26,6 @@ trait Request {
   def path: List[String]
   
 }
-
-/** A response returned by Routes. Implemented as a wrapper for a web-framework-specific response type. */
-trait Response
 
 object Request {
   

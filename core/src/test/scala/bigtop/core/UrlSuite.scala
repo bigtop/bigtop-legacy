@@ -25,7 +25,7 @@ class UrlSuite extends FunSuite with Assertions {
   
   def testUrl(urlString: String)(urlStruct: Url) = {
     test("encode/decode " + urlString) {
-      expect(urlString)(urlStruct.urlString)
+      expect(urlString)(urlStruct.toString)
       expect(Some(urlStruct))(Url.fromString(urlString))
     }
   }
@@ -117,10 +117,10 @@ class UrlSuite extends FunSuite with Assertions {
     
   test("Url.toString(String)") {
     expect("http://www.racket-lang.org/a/b/c?tam=tom;pam=pom#joe")(
-      Url(Some("http"), None, Some("www.racket-lang.org"), None, true, List("a", "b", "c"), List("tam" -> "tom", "pam" -> "pom"), Some("joe")).urlString(";"))
+      Url(Some("http"), None, Some("www.racket-lang.org"), None, true, List("a", "b", "c"), List("tam" -> "tom", "pam" -> "pom"), Some("joe")).toString(";"))
 
     expect("http://www.racket-lang.org/a/b/c?tam=tom&pam=pom#joe")(
-      Url(Some("http"), None, Some("www.racket-lang.org"), None, true, List("a", "b", "c"), List("tam" -> "tom", "pam" -> "pom"), Some("joe")).urlString("&"))
+      Url(Some("http"), None, Some("www.racket-lang.org"), None, true, List("a", "b", "c"), List("tam" -> "tom", "pam" -> "pom"), Some("joe")).toString("&"))
   }
   
   test("get, getOne") {

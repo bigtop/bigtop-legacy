@@ -24,7 +24,7 @@ class BigtopProject(info: ProjectInfo) extends ParentProject(info) {
   // Disable dependencies on sub-projects:
   override def deliverProjectDependencies = Nil
 
-  val untypedRepo = "Untyped Public Repo" at "http://repo.untyped.com"
+  val untypedRepo = "Untyped" at "http://repo.untyped.com"
 
   // Libraries ----------------------------------
 
@@ -34,6 +34,7 @@ class BigtopProject(info: ProjectInfo) extends ParentProject(info) {
   
   lazy val bcrypt = "org.mindrot" % "jbcrypt" % "0.3m"
   lazy val c3p0 = "c3p0" % "c3p0" % "0.9.1.2"
+  lazy val jetty = "org.mortbay.jetty" % "jetty" % "6.1.22" % "compile"
   lazy val jettyTest = "org.mortbay.jetty" % "jetty" % "6.1.22" % "test"
   lazy val liftCommon = "net.liftweb" %% "lift-common" % liftVersion % "compile"
   lazy val liftMongodb = "net.liftweb" %% "lift-mongodb" % liftVersion % "compile"
@@ -72,7 +73,7 @@ class BigtopProject(info: ProjectInfo) extends ParentProject(info) {
   lazy val debug = bigtopProject("debug", liftCommon, liftWebkit, scalatest)()
   lazy val record = bigtopProject("record", liftCommon, liftWebkit, liftRecord, liftSquerylRecord, scalatest)(debug, core)
   lazy val report = bigtopProject("report", liftCommon, liftWebkit, scalatest)(debug, core)
-  lazy val routes = bigtopProject("routes", liftCommon, liftWebkit, specs)(debug, core)
+  lazy val routes = bigtopProject("routes", liftCommon, liftWebkit, specs, jetty)(debug, core)
   lazy val squeryl = bigtopProject("squeryl", liftCommon, liftWebkit, liftSquerylRecord, postgresql, c3p0, scalatest)(debug, core, record)
   lazy val mongodb = bigtopProject("mongodb", liftCommon, liftWebkit, liftMongodb, liftMongodbRecord, rogue, scalatest)(debug, core, record)
   lazy val util = bigtopProject("util", liftCommon, liftWebkit, scalatest)(debug, core)

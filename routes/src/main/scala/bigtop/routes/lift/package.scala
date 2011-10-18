@@ -14,22 +14,24 @@
  * limitations under the License.
  */
 
-package bigtop
-package routes
+package bigtop.routes
 
-// HList Implementation based on code by Mark Harrah:
-// https://github.com/harrah/up
+package object lift {
+  
+  /**
+   * Bidirectional map between a segment of a URL path and a typed Scala value.
+   *
+   * Extend this trait to provide parsing functionality for any type of Scala value.
+   */
+  type Arg[X]   = core.Arg[X]
+  
+  /** Arg for mapping URL path segments to/from Int values. */
+  val IntArg    = core.IntArg
 
-sealed trait HList
+  /** Arg for mapping URL path segments to/from Double values. */
+  val DoubleArg = core.DoubleArg
 
-final case class HCons[H, T <: HList](val head : H, val tail : T) extends HList {
-  def ::[Next](next: Next) =
-    HCons(next, this)
+  /** Arg for mapping URL path segments to/from String values. */
+  val StringArg = core.StringArg
+  
 }
-
-sealed abstract class HNil extends HList {
-  def ::[X](item: X) =
-    HCons(item, this)
-}
-
-case object HNil extends HNil

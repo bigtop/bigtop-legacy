@@ -98,7 +98,7 @@ trait Report[T] {
    * We store this in a val at snippet creation time in case we end up rewriting URLs
    * during an AJAX call (which rewrites the /ajax_request/foo URL).
    */
-  val reportUrl = Url.fromLift
+  val reportUrl = Url.liftUrl
   
   def rewriteUrl: Url =
     List(searchTerm, order, start, count).
@@ -201,12 +201,12 @@ trait Report[T] {
       case "" => None
       case other => Some(other)
     })
-    JsCmds.RedirectTo(rewriteUrl.urlString)
+    JsCmds.RedirectTo(rewriteUrl.toString)
   }
   
   def onSort(ord: ReportOrder): JsCmd = {
     order.set(ord)
-    JsCmds.RedirectTo(rewriteUrl.urlString)
+    JsCmds.RedirectTo(rewriteUrl.toString)
   }
   
   def onResort(Col: ReportColumn): JsCmd =

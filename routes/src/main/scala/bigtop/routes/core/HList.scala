@@ -14,21 +14,21 @@
  * limitations under the License.
  */
 
-package bigtop
-package routes
+package bigtop.routes.core
 
-import org.specs._
+// HList Implementation based on code by Mark Harrah:
+// https://github.com/harrah/up
 
-class HListSpec extends Specification {
+sealed trait HList
 
-  "HLists can have heterogeneous arguments" in {
-    val list = 2.0 :: 1 :: HNil
-    
-    list.head mustEqual 2.0
-    list.tail mustEqual HCons(1, HNil)
-    
-    list.tail.head mustEqual 1
-    list.tail.tail mustEqual HNil
-  }
-  
-} 
+final case class HCons[H, T <: HList](val head : H, val tail : T) extends HList {
+  def ::[Next](next: Next) =
+    HCons(next, this)
+}
+
+sealed abstract class HNil extends HList {
+  def ::[X](item: X) =
+    HCons(item, this)
+}
+
+case object HNil extends HNil

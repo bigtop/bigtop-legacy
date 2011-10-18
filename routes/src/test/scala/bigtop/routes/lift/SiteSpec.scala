@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-package bigtop
-package routes
+package bigtop.routes.lift
 
+import bigtop.core.Url
 import net.liftweb.http.Req
 import org.specs._
 
-class LiftSiteSpec extends Specification with LiftHttp {
+class SiteSpec extends Specification with Http {
   
-  object Calculator extends LiftSite {
+  object Calculator extends Site {
   
     // Routing table:
 
@@ -60,8 +60,6 @@ class LiftSiteSpec extends Specification with LiftHttp {
   }
 
   "routes can be invoked directly" in {
-    import HListOps._
-    
     Calculator.add(1, 2)                         must matchResponse(TestResponse("1 + 2 = 3"))
     Calculator.multiply(3, 4)                    must matchResponse(TestResponse("3 * 4 = 12"))
     Calculator.square(5)                         must matchResponse(TestResponse("5 * 5 = 25"))
@@ -70,14 +68,19 @@ class LiftSiteSpec extends Specification with LiftHttp {
   }
   
   "routes produce the correct urls" in {
-    import HListOps._
-    
-    Calculator.add.url(1, 2)                         mustEqual "/add/1/to/2"
-    Calculator.multiply.url(3, 4)                    mustEqual "/multiply/3/by/4"
-    Calculator.square.url(5)                         mustEqual "/square/5"
-    Calculator.repeat.url("abc", 2)                  mustEqual "/repeat/abc/2/times"
-    Calculator.append.url(List("abc", "def", "ghi")) mustEqual "/append/abc/def/ghi"
+    Calculator.add.url(1, 2)                         mustEqual Url("/add/1/to/2")
+    Calculator.multiply.url(3, 4)                    mustEqual Url("/multiply/3/by/4")
+    Calculator.square.url(5)                         mustEqual Url("/square/5")
+    Calculator.repeat.url("abc", 2)                  mustEqual Url("/repeat/abc/2/times")
+    Calculator.append.url(List("abc", "def", "ghi")) mustEqual Url("/append/abc/def/ghi")
   }
-
+  
+  "routes produce the correct paths" in {
+    Calculator.add.path(1, 2)                         mustEqual "/add/1/to/2"
+    Calculator.multiply.path(3, 4)                    mustEqual "/multiply/3/by/4"
+    Calculator.square.path(5)                         mustEqual "/square/5"
+    Calculator.repeat.path("abc", 2)                  mustEqual "/repeat/abc/2/times"
+    Calculator.append.path(List("abc", "def", "ghi")) mustEqual "/append/abc/def/ghi"
+  }
   
 }

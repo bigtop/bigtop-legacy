@@ -31,11 +31,11 @@ class UrlVarSuite extends FunSuite with Assertions {
     
     testS("http://example.com/a/b/c") {
       expect("default")(v.is)
-      expect("/a/b/c")(v.rewriteCurrentUrl.urlString)
+      expect("/a/b/c")(v.rewriteCurrentUrl.toString)
       
       v.set("a/b/c")
       expect("a/b/c")(v.is)
-      expect("/a/b/c?v=a%2Fb%2Fc")(v.rewriteCurrentUrl.urlString)
+      expect("/a/b/c?v=a%2Fb%2Fc")(v.rewriteCurrentUrl.toString)
     }
     
     testS("http://example.com?v=a%2Fb%2Fc") {
@@ -50,11 +50,11 @@ class UrlVarSuite extends FunSuite with Assertions {
     
     testS("http://example.com/a/b/c") {
       expect(None)(v.is)
-      expect("/a/b/c")(v.rewriteCurrentUrl.urlString)
+      expect("/a/b/c")(v.rewriteCurrentUrl.toString)
 
       v.set(Some("a/b/c"))
       expect(Some("a/b/c"))(v.is)
-      expect("/a/b/c?v=a%2Fb%2Fc")(v.rewriteCurrentUrl.urlString)
+      expect("/a/b/c?v=a%2Fb%2Fc")(v.rewriteCurrentUrl.toString)
     }
     
     testS("http://example.com?v=a%2Fb%2Fc") {
@@ -69,11 +69,11 @@ class UrlVarSuite extends FunSuite with Assertions {
     
     testS("http://example.com/a/b/c") {
       expect(true)(v.is)
-      expect("/a/b/c")(v.rewriteCurrentUrl.urlString)
+      expect("/a/b/c")(v.rewriteCurrentUrl.toString)
       
       v.set(false)
       expect(false)(v.is)
-      expect("/a/b/c?v=no")(v.rewriteCurrentUrl.urlString)
+      expect("/a/b/c?v=no")(v.rewriteCurrentUrl.toString)
     }
   }
   
@@ -82,11 +82,11 @@ class UrlVarSuite extends FunSuite with Assertions {
     
     testS("http://example.com/a/b/c") {
       expect(123)(v.is)
-      expect("/a/b/c")(v.rewriteCurrentUrl.urlString)
+      expect("/a/b/c")(v.rewriteCurrentUrl.toString)
       
       v.set(456)
       expect(456)(v.is)
-      expect("/a/b/c?v=456")(v.rewriteCurrentUrl.urlString)
+      expect("/a/b/c?v=456")(v.rewriteCurrentUrl.toString)
     }
     
     testS("http://example.com?v=-123") {
@@ -101,18 +101,18 @@ class UrlVarSuite extends FunSuite with Assertions {
     
     testS("http://example.com/a/b/c") {
       expect(None)(v.is)
-      expect("/a/b/c")(v.rewriteCurrentUrl.urlString)
+      expect("/a/b/c")(v.rewriteCurrentUrl.toString)
 
       v.set(Some(123))
       expect(Some(123))(v.is)
-      expect("/a/b/c?v=123")(v.rewriteCurrentUrl.urlString)
+      expect("/a/b/c?v=123")(v.rewriteCurrentUrl.toString)
     }
     
     testS("http://example.com/a/b/c?v=456") {
       expect(Some(456))(v.is)
       v.set(None)
       expect(None)(v.is)
-      expect("/a/b/c")(v.rewriteCurrentUrl.urlString)
+      expect("/a/b/c")(v.rewriteCurrentUrl.toString)
     }
   }
   

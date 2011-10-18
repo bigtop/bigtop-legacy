@@ -42,7 +42,7 @@ trait UrlParam[T] {
   
   /** Update the supplied URL, setting or removing the relevant query param as necessary. */
   def rewriteUrl(url: String, value: T): String = 
-    rewriteUrl(Url(url), value).urlString
+    rewriteUrl(Url(url), value).toString
 
   /** Update the supplied URL, setting or removing the relevant query param as necessary. */
   def rewriteUrl(url: Url, value: T): Url =
@@ -64,7 +64,7 @@ trait UrlVar[T] {
     param.rewriteUrl(url, is)
   
   def rewriteCurrentUrl: Url =
-    rewriteUrl(Url.currentPathAndQuery.open_!)
+    rewriteUrl(Url.liftPathAndQuery.open_!)
 }
 
 abstract class UrlRequestVar[T](val param: UrlParam[T]) extends RequestVar[T](param.decodeCurrentUrl) with UrlVar[T] {

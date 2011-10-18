@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-package bigtop
-package routes
+package bigtop.routes.core
 
 import org.specs._
 
@@ -34,9 +33,27 @@ class ArgSpec extends Specification {
     IntArg.decode("123") must beSome(123)
   }
 
+  "DoubleArg.encode works as expected" in {
+    DoubleArg.encode(123.0) mustEqual "123.0"
+  }
+
+  "DoubleArg.canDecode works as expected" in {
+    DoubleArg.canDecode("123.0") mustEqual true
+    DoubleArg.canDecode("abc") mustEqual false
+  }
+  
+  "DoubleArg.decode decodes integers correctly" in {
+    DoubleArg.decode("123.0") must beSome(123.0)
+  }
+
   "StringArg.encode does not (un)escape reserved characters" in {
     StringArg.encode("a/b") mustEqual "a/b"
     StringArg.encode("a%2Fb") mustEqual "a%2Fb"
+  }
+  
+  "StringArg.canDecode always returns true" in {
+    StringArg.canDecode("a/b") mustEqual true
+    StringArg.canDecode("a%2Fb") mustEqual true
   }
   
   "StringArg.decode does not (un)escape reserved characters" in {
