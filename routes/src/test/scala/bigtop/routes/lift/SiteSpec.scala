@@ -51,20 +51,20 @@ class SiteSpec extends Specification with Http {
     
   }
   
-  "site applies to the correct route" in {
-    Calculator(TestRequest("/add/1/to/2"))         must matchOptionalResponse(Some(TestResponse("1 + 2 = 3")))
-    Calculator(TestRequest("/multiply/3/by/4"))    must matchOptionalResponse(Some(TestResponse("3 * 4 = 12")))
-    Calculator(TestRequest("/square/5"))           must matchOptionalResponse(Some(TestResponse("5 * 5 = 25")))
-    Calculator(TestRequest("/repeat/abc/2/times")) must matchOptionalResponse(Some(TestResponse("abc * 2 = abcabc")))
-    Calculator(TestRequest("/append/abc/def/ghi")) must matchOptionalResponse(Some(TestResponse("append(List(abc, def, ghi)) = abcdefghi")))
+  "site.apply() dispatches to the correct route" in {
+    Calculator.apply(TestRequest("/add/1/to/2"))         must matchOptionalResponse(Some(TestResponse("1 + 2 = 3")))
+    Calculator.apply(TestRequest("/multiply/3/by/4"))    must matchOptionalResponse(Some(TestResponse("3 * 4 = 12")))
+    Calculator.apply(TestRequest("/square/5"))           must matchOptionalResponse(Some(TestResponse("5 * 5 = 25")))
+    Calculator.apply(TestRequest("/repeat/abc/2/times")) must matchOptionalResponse(Some(TestResponse("abc * 2 = abcabc")))
+    Calculator.apply(TestRequest("/append/abc/def/ghi")) must matchOptionalResponse(Some(TestResponse("append(List(abc, def, ghi)) = abcdefghi")))
   }
 
   "routes can be invoked directly" in {
-    Calculator.add(1, 2)                         must matchResponse(TestResponse("1 + 2 = 3"))
-    Calculator.multiply(3, 4)                    must matchResponse(TestResponse("3 * 4 = 12"))
-    Calculator.square(5)                         must matchResponse(TestResponse("5 * 5 = 25"))
-    Calculator.repeat("abc", 2)                  must matchResponse(TestResponse("abc * 2 = abcabc"))
-    Calculator.append(List("abc", "def", "ghi")) must matchResponse(TestResponse("append(List(abc, def, ghi)) = abcdefghi"))
+    Calculator.add.apply(1, 2)                         must matchResponse(TestResponse("1 + 2 = 3"))
+    Calculator.multiply.apply(3, 4)                    must matchResponse(TestResponse("3 * 4 = 12"))
+    Calculator.square.apply(5)                         must matchResponse(TestResponse("5 * 5 = 25"))
+    Calculator.repeat.apply("abc", 2)                  must matchResponse(TestResponse("abc * 2 = abcabc"))
+    Calculator.append.apply(List("abc", "def", "ghi")) must matchResponse(TestResponse("append(List(abc, def, ghi)) = abcdefghi"))
   }
   
   "routes produce the correct urls" in {

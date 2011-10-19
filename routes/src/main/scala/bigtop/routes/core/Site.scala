@@ -16,29 +16,41 @@
 
 package bigtop.routes.core
 
+import scala.util.DynamicVariable
+
 trait Site[FrameworkRequest, FrameworkResponse] extends RouteBuilder[FrameworkRequest, FrameworkResponse] {
-  
-  /** Routes in this site in the order they should be visited in appply(). */
-  private var routes: List[Route[_, FrameworkResponse]] =
-    Nil
-  
+
+  /** Reference to this site. Used in RouteBuilder to automatically add routes to the site. */
+  implicit val site = this
+
   /** Programmer-friendly alias for PNil. */
   val end = PNil
 
   /** Programmer-friendly alias for PAny. */
   val any = PAny
   
-  implicit val site = this
+  /** Routes in this site in the order they should be visited in appply(). */
+  protected var routes: List[Route[_, FrameworkResponse]] = Nil
   
   /**
    * Add a Route to this Site.
    *
    * Return the same Route object that was supplied as an argument.
    */
-  private[routes] def addRoute[Rt <: Route[_, FrameworkResponse]](route: Rt): Rt = {
+  protected[routes] def addRoute[Rt <: Route[_, FrameworkResponse]](route: Rt): Rt = {
     routes = routes :+ route
     route
   }
+  
+  /** The current request being serviced by this Site. */
+  protected val _request = new DynamicVariable[Option[FrameworkRequest]](None)
+  
+  /**
+   * The current request being serviced by this Site.
+   *
+   * Undefined outside of the dynamic scope of Site.apply().
+   */
+  def request = _request.value.get
   
   /**
    * Perform a quick check to see if any of the Routes in this Site can respond to the supplied Request.
@@ -57,14 +69,14 @@ trait Site[FrameworkRequest, FrameworkResponse] extends RouteBuilder[FrameworkRe
    * 
    * Return None if the request cannot be decoded.
    */
-  def apply(frameworkReq: FrameworkRequest): Option[FrameworkResponse] = {
-    val req = wrapRequest(frameworkReq)
-    
-    routes.find(_.isDefinedAt(req)) match {
-      case Some(route) => route.apply(req)
-      case None => throw new Exception("Failed to find a matching route for " + req)
+  def apply(frameworkReq: FrameworkRequest): Option[FrameworkResponse] =
+    _request.withValue(Some(frameworkReq)) {
+      val req = wrapRequest(frameworkReq)
+      routes.find(_.isDefinedAt(req)) match {
+        case Some(route) => route.apply(req)
+        case None => throw new Exception("Failed to find a matching route for " + req)
+      }
     }
-  }
   
   /** Convert an implementation-specific request into a routes Request. */
   def wrapRequest(req: FrameworkRequest): Request

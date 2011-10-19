@@ -34,37 +34,57 @@ class SiteSpec extends Specification with Http {
 
     // Implementation:
 
-    def doAdd(a: Int, b: Int) =
-      TestResponse("%s + %s = %s".format(a, b, a + b))
+    def doAdd(a: Int, b: Int): Unit =
+      response.getWriter.print("%s + %s = %s".format(a, b, a + b))
   
-    def doMultiply(a: Int, b: Int) =
-      TestResponse("%s * %s = %s".format(a, b, a * b))
-  
-    def doSquare(a: Int) =
+    def doMultiply(a: Int, b: Int): Unit =
+      response.getWriter.print("%s * %s = %s".format(a, b, a * b))
+    
+    def doSquare(a: Int): Unit =
       multiply(a, a)
 
-    def doRepeat(a: String, b: Int) =
-      TestResponse("%s * %s = %s".format(a, b, a * b))
+    def doRepeat(a: String, b: Int): Unit =
+      response.getWriter.print("%s * %s = %s".format(a, b, a * b))
   
-    def doAppend(a: List[String]) =
-      TestResponse("append(%s) = %s".format(a, a.mkString))
+    def doAppend(a: List[String]): Unit =
+      response.getWriter.print("append(%s) = %s".format(a, a.mkString))
+    
+    // Hooks for tests:
+    
+    /** Invokes the top-level apply() method and returns the accumulated response content. */
+    def testTopLevel(req: TestRequest): String = {
+      val res = new TestResponse
+      _response.withValue(Some(res)) {
+        apply(req, res)
+      }
+      res.buffer.toString
+    }
+    
+    /** Invokes a route's apply() method and returns the accumulated response content. */
+    def testRouteApply(fn : => Unit): String = {
+      val res = new TestResponse
+      _response.withValue(Some(res)) {
+        fn
+      }
+      res.buffer.toString
+    }
     
   }
   
   "site applies to the correct route" in {
-    Calculator(TestRequest("/add/1/to/2"))         must beSome(TestResponse("1 + 2 = 3"))
-    Calculator(TestRequest("/multiply/3/by/4"))    must beSome(TestResponse("3 * 4 = 12"))
-    Calculator(TestRequest("/square/5"))           must beSome(TestResponse("5 * 5 = 25"))
-    Calculator(TestRequest("/repeat/abc/2/times")) must beSome(TestResponse("abc * 2 = abcabc"))
-    Calculator(TestRequest("/append/abc/def/ghi")) must beSome(TestResponse("append(List(abc, def, ghi)) = abcdefghi"))
+    Calculator.testTopLevel(TestRequest("/add/1/to/2"))         mustEqual "1 + 2 = 3"
+    Calculator.testTopLevel(TestRequest("/multiply/3/by/4"))    mustEqual "3 * 4 = 12"
+    Calculator.testTopLevel(TestRequest("/square/5"))           mustEqual "5 * 5 = 25"
+    Calculator.testTopLevel(TestRequest("/repeat/abc/2/times")) mustEqual "abc * 2 = abcabc"
+    Calculator.testTopLevel(TestRequest("/append/abc/def/ghi")) mustEqual "append(List(abc, def, ghi)) = abcdefghi"
   }
 
   "routes can be invoked directly" in {
-    Calculator.add(1, 2)                         mustEqual TestResponse("1 + 2 = 3")
-    Calculator.multiply(3, 4)                    mustEqual TestResponse("3 * 4 = 12")
-    Calculator.square(5)                         mustEqual TestResponse("5 * 5 = 25")
-    Calculator.repeat("abc", 2)                  mustEqual TestResponse("abc * 2 = abcabc")
-    Calculator.append(List("abc", "def", "ghi")) mustEqual TestResponse("append(List(abc, def, ghi)) = abcdefghi")
+    Calculator.testRouteApply(Calculator.add(1, 2))                         mustEqual "1 + 2 = 3"
+    Calculator.testRouteApply(Calculator.multiply(3, 4))                    mustEqual "3 * 4 = 12"
+    Calculator.testRouteApply(Calculator.square(5))                         mustEqual "5 * 5 = 25"
+    Calculator.testRouteApply(Calculator.repeat("abc", 2))                  mustEqual "abc * 2 = abcabc"
+    Calculator.testRouteApply(Calculator.append(List("abc", "def", "ghi"))) mustEqual "append(List(abc, def, ghi)) = abcdefghi"
   }
   
   "routes produce the correct urls" in {

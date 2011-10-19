@@ -22,16 +22,29 @@ package object lift {
    * Bidirectional map between a segment of a URL path and a typed Scala value.
    *
    * Extend this trait to provide parsing functionality for any type of Scala value.
+   *
+   * @see bigtop.routes.core.Arg
    */
-  type Arg[X]   = core.Arg[X]
+  type Arg[X] = core.Arg[X]
   
-  /** Arg for mapping URL path segments to/from Int values. */
-  val IntArg    = core.IntArg
+  /**
+   * Arg for mapping URL path segments to/from Int values.
+   *
+   * @see bigtop.routes.core.IntArg
+   */
+  val IntArg = core.IntArg
 
-  /** Arg for mapping URL path segments to/from Double values. */
+  /**
+   * Arg for mapping URL path segments to/from Double values.
+   *
+   * @see bigtop.routes.core.IntArg
+   */
   val DoubleArg = core.DoubleArg
 
-  /** Arg for mapping URL path segments to/from String values. */
+  /** Arg for mapping URL path segments to/from String values.
+   *
+   * @see bigtop.routes.core.IntArg
+   */
   val StringArg = core.StringArg
   
 }

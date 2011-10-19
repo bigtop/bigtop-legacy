@@ -19,6 +19,7 @@ package plain
 
 import java.net.URLDecoder.{decode => urlDecode}
 import javax.servlet.http.{HttpServletRequest,HttpServletResponse}
+import scala.util.DynamicVariable
 
 /**
  * A `javax.servlet`-compatible Routes `Site`. Extend this trait to implement your own bidirectional type-safe
@@ -59,8 +60,38 @@ import javax.servlet.http.{HttpServletRequest,HttpServletResponse}
  * }
  * }}}
  */
-trait Site extends core.Site[HttpServletRequest, HttpServletResponse] {
+trait Site extends core.Site[HttpServletRequest, Unit] {
 
+  /**
+   * The current request being serviced by this Site.
+   *
+   * Undefined outside of the dynamic scope of Site.apply().
+   */
+  protected val _response = new DynamicVariable[Option[HttpServletResponse]](None)
+  
+  /**
+   * The current response being assembled by this Site.
+   *
+   * Undefined outside of the dynamic scope of Site.apply().
+   */
+  def response = _response.value.get
+  
+  /**
+   * Stores a reference to the HttpServletResponse and calls apply(HttpServletRequest).
+   *
+   * Because Java servlets are based on mutation of the response, it's essential to do one of the following:
+   *
+   *   - store a reference to the response somewhere in the servlet;
+   *   - pass a reference to the response around to any method servicing the request.
+   *
+   * Because Routes does not explicitly pass references to requests or responses around,
+   * we have to use the first option above.
+   *
+   * This method is therefore the recommended entry point when using Routes in an HttpServlet.
+   */
+  def apply(req: HttpServletRequest, res: HttpServletResponse): Unit =
+    _response.withValue(Some(res))(apply(req))
+  
   /** Extract a URL path from the supplied request. */
   def requestPath(req: HttpServletRequest): List[String] =
     req.getPathTranslated.
