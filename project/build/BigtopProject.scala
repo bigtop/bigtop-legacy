@@ -69,7 +69,7 @@ class BigtopProject(info: ProjectInfo) extends ParentProject(info) {
   
   // Subprojects --------------------------------
   
-  lazy val core = bigtopProject("core", liftCommon, liftWebkit, liftRecord, scalatest, scalaCheck, liftTestkit, jettyTest, bcrypt)()
+  lazy val core = bigtopProject("core", liftCommon, liftWebkit, liftRecord, specs, scalatest, scalaCheck, liftTestkit, jettyTest, bcrypt)()
   lazy val debug = bigtopProject("debug", liftCommon, liftWebkit, scalatest)()
   lazy val record = bigtopProject("record", liftCommon, liftWebkit, liftRecord, liftSquerylRecord, scalatest)(debug, core)
   lazy val report = bigtopProject("report", liftCommon, liftWebkit, scalatest)(debug, core)
