@@ -187,4 +187,19 @@ class UrlSuite extends FunSuite with Assertions {
     intercept[MalformedURLException](Url("/a/b/c").toURL)
   }
   
+  test("scheme(String)") {
+    expect(Url("https://example.com"))(Url("http://example.com").scheme("https"))
+  }
+  
+  test("path(String)") {
+    expect(Url("http://example.com/foo/bar"))(Url("http://example.com").path("/foo/bar"))
+    expect(Url("http://example.com/foo/bar"))(Url("http://example.com").path("foo/bar"))
+    expect(Url("http://example.com/foo%2Fbar"))(Url("http://example.com").path("foo%2Fbar"))
+  }
+  
+  test("query(String)") {
+    expect(Url("http://example.com?a=b&c=d"))(Url("http://example.com").query("a=b&c=d"))
+    expect(Url("http://example.com?a=b&c=d%2Fe"))(Url("http://example.com").query("a=b&c=d%2Fe"))
+  }
+  
 }
