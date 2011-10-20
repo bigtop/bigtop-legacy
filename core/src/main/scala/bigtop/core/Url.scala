@@ -138,7 +138,7 @@ case class Url(
    * the path will be treated as absolute or relative depending on whether it starts with a `"/"`.
    */
   def path(newPath: String): Url = {
-    val parsedPath = Url.parsePath(newPath)
+    val parsedPath = Url.parsePath(Some(newPath))
     copy(path = parsedPath, pathAbsolute = if(host.isDefined) !parsedPath.isEmpty else newPath.startsWith("/"))
   }
   
@@ -152,7 +152,7 @@ case class Url(
    * @param newQuery A query string, e.g. "a=b&c=d". Must be URL-encoded and must not start with a "?".
    */
   def query(newQuery: String): Url =
-    query(Url.parseQuery(newQuery))
+    query(Url.parseQuery(Some(newQuery)))
 
   /** Return a new URL with the specified query parameters. */
   def query(newQuery: List[(String, String)]): Url =
