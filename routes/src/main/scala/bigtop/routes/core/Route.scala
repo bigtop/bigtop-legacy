@@ -21,9 +21,9 @@ import java.net.URLEncoder.{encode => urlEncode}
 
 import HListOps._
 
-class Route[Res <: HList, FrameworkResponse](
-  pattern: Path { type Inner = Res },
-  fn: (Res) => FrameworkResponse
+class Route[Args <: HList, FrameworkResponse](
+  pattern: Path { type Inner = Args },
+  fn: (Args) => FrameworkResponse
 ) {
   
   /**
@@ -47,17 +47,17 @@ class Route[Res <: HList, FrameworkResponse](
     pattern.decode(req.path).map(fn)
   
   /** Generate a Url from the supplied HList. */
-  private[routes] def url(args: Res): Url =
+  private[routes] def url(args: Args): Url =
     Url(path = pattern.encode(args))
   
   /** Generate a URL path string from the supplied HList. */
-  private[routes] def path(args: Res): String =
+  private[routes] def path(args: Args): String =
     pattern.encode(args).
             map(urlEncode(_, "utf-8")).
             mkString("/", "/", "")
   
   /** Generate an HTTP response from the supplied HList. */
-  private[routes] def apply(args: Res) =
+  private[routes] def apply(args: Args) =
     fn(args)
 
 }

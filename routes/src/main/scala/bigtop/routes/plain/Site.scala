@@ -30,21 +30,21 @@ import scala.util.DynamicVariable
  * 
  * import bigtop.routes.plain._
  * 
- * object Calculator extends Site {
+ * class Calculator extends Site {
  * 
  *   // Routing table:
  *
  *   val add      = ("add"      :/: IntArg    :/: "to"   :/: IntArg  :/: end) >> (doAdd _)
  *   val repeat   = ("repeat"   :/: StringArg :/: IntArg :/: "times" :/: end) >> (doRepeat _)
- *   val append   = ("append"                                        :/: any) >> (doAppend _)
  *
  *   // Implementation:
  *
- *   def doAdd(a: Int, b: Int): HttpServletResponse =
- *     // ...
+ *   def doAdd(a: Int, b: Int): Unit =
+ *     response.getWriter.print( // ... )
  * 
- *   def doRepeat(a: String, b: Int): HttpServletResponse =
- *     // ...
+ *   def doRepeat(a: String, b: Int): Unit =
+ *     response.getWriter.print( // ... )
+ * 
  * }
  * }}}
  *
@@ -53,15 +53,24 @@ import scala.util.DynamicVariable
  * {{{
  * class MyServlet extends HttpServlet {
  * 
- *   def service(req: HttpServletRequest, res: HttpServletResponse): Unit = {
- *     Calculator.dispatch(req)
- *   }
+ *   def service(req: HttpServletRequest, res: HttpServletResponse): Unit =
+ *     Calculator.apply(req, res)
  *
  * }
  * }}}
  */
 trait Site extends core.Site[HttpServletRequest, Unit] {
-
+  
+  /** The current request being serviced by this Site. */
+  protected val _request = new DynamicVariable[Option[HttpServletRequest]](None)
+  
+  /**
+   * The current request being serviced by this Site.
+   *
+   * Undefined outside of the dynamic scope of Site.apply().
+   */
+  def request = _request.value.get
+  
   /**
    * The current request being serviced by this Site.
    *
@@ -77,7 +86,7 @@ trait Site extends core.Site[HttpServletRequest, Unit] {
   def response = _response.value.get
   
   /**
-   * Stores a reference to the HttpServletResponse and calls apply(HttpServletRequest).
+   * Stores references to the request and response objects apply(request).
    *
    * Because Java servlets are based on mutation of the response, it's essential to do one of the following:
    *
@@ -85,16 +94,21 @@ trait Site extends core.Site[HttpServletRequest, Unit] {
    *   - pass a reference to the response around to any method servicing the request.
    *
    * Because Routes does not explicitly pass references to requests or responses around,
-   * we have to use the first option above.
+   * we have to use the first option above. We store both the request and response and
+   * expose them for the dynamic extent of `apply()` via the `request` and `response` methods.
    *
    * This method is therefore the recommended entry point when using Routes in an HttpServlet.
    */
   def apply(req: HttpServletRequest, res: HttpServletResponse): Unit =
-    _response.withValue(Some(res))(apply(req))
+    _request.withValue(Some(req)) {
+      _response.withValue(Some(res)) {
+        apply(req)
+      }
+    }
   
   /** Extract a URL path from the supplied request. */
   def requestPath(req: HttpServletRequest): List[String] =
-    req.getPathTranslated.
+    req.getRequestURI.
         split("/").
         toList.
         map(urlDecode(_, "utf-8").trim).

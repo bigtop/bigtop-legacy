@@ -35,15 +35,15 @@ import net.liftweb.http.{Req, LiftResponse, LiftRules}
  *
  *   val add      = ("add"      :/: IntArg    :/: "to"   :/: IntArg  :/: end) >> (doAdd _)
  *   val repeat   = ("repeat"   :/: StringArg :/: IntArg :/: "times" :/: end) >> (doRepeat _)
- *   val append   = ("append"                                        :/: any) >> (doAppend _)
  *
  *   // Implementation:
  *
  *   def doAdd(a: Int, b: Int): LiftResponse =
- *     // ...
+ *     InMemoryResponse( // ... )
  * 
  *   def doRepeat(a: String, b: Int): LiftResponse =
- *     // ...
+ *     InMemoryResponse( // ... )
+ *
  * }
  * }}}
  *
@@ -62,7 +62,7 @@ import net.liftweb.http.{Req, LiftResponse, LiftRules}
  * }}}
  */
 trait Site extends core.Site[Req, LiftResponse] {
-    
+  
   /**
    * Generate a `DispatchPF` function for use with `LiftRules.dispatch` or `LiftRules.statelessDispatch`. For example:
    *

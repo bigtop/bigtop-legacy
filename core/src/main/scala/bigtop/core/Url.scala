@@ -98,26 +98,61 @@ case class Url(
    */
   val fragment: Option[String] = None
 ) {
+
+  /** Return a new URL with the specified HTTP scheme. */
+  def scheme(newScheme: String): Url =
+    scheme(Some(newScheme))
   
   /** Return a new URL with the specified HTTP scheme. */
   def scheme(newScheme: Option[String]): Url =
     copy(scheme = newScheme)
     
   /** Return a new URL with the specified user/password. */
+  def user(newUser: String): Url =
+    user(Some(newUser))
+    
+  /** Return a new URL with the specified user/password. */
   def user(newUser: Option[String]): Url =
     copy(user = newUser)
+
+  /** Return a new URL with the specified host name. */
+  def host(newHost: String): Url =
+    host(Some(newHost))
     
   /** Return a new URL with the specified host name. */
   def host(newHost: Option[String]): Url =
     copy(host = newHost, pathAbsolute = if(newHost.isDefined) !path.isEmpty else pathAbsolute)
-    
+  
+  /** Return a new URL with the specified port. */
+  def port(newPort: Int): Url =
+    port(Some(newPort))
+  
   /** Return a new URL with the specified port. */
   def port(newPort: Option[Int]): Url =
     copy(port = newPort)
   
+  /**
+   * Return a new URL with the specified path.
+   *
+   * @param newPath The new path. Must be URL-encoded. If the current Url's `host` is unspecified,
+   * the path will be treated as absolute or relative depending on whether it starts with a `"/"`.
+   */
+  def path(newPath: String): Url = {
+    val parsedPath = Url.parsePath(newPath)
+    copy(path = parsedPath, pathAbsolute = if(host.isDefined) !parsedPath.isEmpty else newPath.startsWith("/"))
+  }
+  
   /** Return a new URL with the specified path. */
   def path(newPath: List[String]): Url =
     copy(path = newPath, pathAbsolute = if(host.isDefined) !newPath.isEmpty else pathAbsolute)
+  
+  /**
+   * Return a new URL with the specified query parameters.
+   *
+   * @param newQuery A query string, e.g. "a=b&c=d". Must be URL-encoded and must not start with a "?".
+   */
+  def query(newQuery: String): Url =
+    query(Url.parseQuery(newQuery))
 
   /** Return a new URL with the specified query parameters. */
   def query(newQuery: List[(String, String)]): Url =

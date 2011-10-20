@@ -36,11 +36,11 @@ trait Http {
     def getIntHeader(name: String): Int = 0
     def getMethod: String = ""
     def getPathInfo: String = "" 
-    def getPathTranslated: String = path
+    def getPathTranslated: String = ""
     def getQueryString: String = ""
     def getRemoteUser: String = ""
     def getRequestedSessionId: String = ""
-    def getRequestURI: String = ""
+    def getRequestURI: String = path
     def getRequestURL: StringBuffer = new StringBuffer("")
     def getServletPath: String = ""
     def getSession: HttpSession = null
@@ -85,7 +85,7 @@ trait Http {
     override def equals(that: Any) =
       that match {
         case that: HttpServletRequest =>
-          this.getPathTranslated == that.getPathTranslated
+          this.getRequestURI == that.getRequestURI
         case _ => false
       }
   }
