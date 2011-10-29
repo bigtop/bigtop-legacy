@@ -32,10 +32,9 @@ class BigtopProject(info: ProjectInfo) extends ParentProject(info) {
   
   val rogueVersion = "1.0.26"
   
-  lazy val bcrypt = "org.mindrot" % "jbcrypt" % "0.3m"
-  lazy val c3p0 = "c3p0" % "c3p0" % "0.9.1.2"
-  lazy val jetty = "org.mortbay.jetty" % "jetty" % "6.1.22" % "compile"
-  lazy val jettyTest = "org.mortbay.jetty" % "jetty" % "6.1.22" % "test"
+  lazy val bcrypt = "org.mindrot" % "jbcrypt" % "0.3m" % "provided"
+  lazy val c3p0   = "c3p0" % "c3p0" % "0.9.1.2" % "provided"
+  lazy val jetty  = "org.mortbay.jetty" % "jetty" % "6.1.22"
   lazy val liftCommon = "net.liftweb" %% "lift-common" % liftVersion % "compile"
   lazy val liftMongodb = "net.liftweb" %% "lift-mongodb" % liftVersion % "compile"
   lazy val liftMongodbRecord = "net.liftweb" %% "lift-mongodb-record" % liftVersion % "compile"
@@ -44,7 +43,7 @@ class BigtopProject(info: ProjectInfo) extends ParentProject(info) {
   lazy val liftTestkit = "net.liftweb" %% "lift-testkit" % liftVersion % "test"
   lazy val liftWebkit = "net.liftweb" %% "lift-webkit" % liftVersion % "compile"
   lazy val postgresql = "postgresql" % "postgresql" % "8.4-702.jdbc4"
-  lazy val rogue = "com.foursquare" %% "rogue" % rogueVersion withSources()
+  lazy val rogue = "com.foursquare" %% "rogue" % rogueVersion
   lazy val scalatra = "org.scalatra" %% "scalatra" % "2.0.1"
   
   lazy val scalaCheck =
@@ -70,7 +69,7 @@ class BigtopProject(info: ProjectInfo) extends ParentProject(info) {
   
   // Subprojects --------------------------------
   
-  lazy val core = bigtopProject("core", liftCommon, liftWebkit, liftRecord, specs, scalatest, scalaCheck, liftTestkit, jettyTest, bcrypt)()
+  lazy val core = bigtopProject("core", liftCommon, liftWebkit, liftRecord, specs, scalatest, scalaCheck, liftTestkit, jetty % "test", bcrypt)()
   lazy val debug = bigtopProject("debug", liftCommon, liftWebkit, scalatest)()
   lazy val record = bigtopProject("record", liftCommon, liftWebkit, liftRecord, liftSquerylRecord, scalatest)(debug, core)
   lazy val report = bigtopProject("report", liftCommon, liftWebkit, scalatest)(debug, core)
