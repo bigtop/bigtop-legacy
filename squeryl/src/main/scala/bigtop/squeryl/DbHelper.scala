@@ -77,10 +77,10 @@ trait DbHelper extends net.liftweb.common.Loggable {
     new LoanWrapper {
       def apply[T](fn: => T): T = {
         try {
-          logger.debug("bigtop.squeryl.DbHelper.withDb starting")
+          // logger.debug("bigtop.squeryl.DbHelper.withDb starting")
           inTransaction(fn)
         } finally {
-          logger.debug("bigtop.squeryl.DbHelper.withDb finished")
+          // logger.debug("bigtop.squeryl.DbHelper.withDb finished")
         }
       }
     }
@@ -88,7 +88,7 @@ trait DbHelper extends net.liftweb.common.Loggable {
   def init: Unit = {
     if(!initialised) {
       try {
-        logger.debug("bigtop.squeryl.DbHelper.init starting")
+        // logger.debug("bigtop.squeryl.DbHelper.init starting")
         SquerylRecord.initWithSquerylSession {
           val session = Session.create(createConnection, adapter)
           session
@@ -98,7 +98,7 @@ trait DbHelper extends net.liftweb.common.Loggable {
       
         initialised = true
       } finally {
-        logger.debug("bigtop.squeryl.DbHelper.init finished")
+        // logger.debug("bigtop.squeryl.DbHelper.init finished")
       }
     }
   }
