@@ -37,9 +37,10 @@ class BigtopProject(info: ProjectInfo) extends ParentProject(info) {
   
   val rogueVersion = "1.0.26"
   
+  lazy val akkaActor = "se.scalablesolutions.akka" % "akka-actor" % "1.1.2"
   lazy val bcrypt = "org.mindrot" % "jbcrypt" % "0.3m" % "provided"
-  lazy val c3p0   = "c3p0" % "c3p0" % "0.9.1.2" % "provided"
-  lazy val jetty  = "org.mortbay.jetty" % "jetty" % "6.1.22"
+  lazy val c3p0 = "c3p0" % "c3p0" % "0.9.1.2" % "provided"
+  lazy val jetty = "org.mortbay.jetty" % "jetty" % "6.1.22"
   lazy val liftCommon = "net.liftweb" %% "lift-common" % liftVersion % "compile"
   lazy val liftMongodb = "net.liftweb" %% "lift-mongodb" % liftVersion % "compile"
   lazy val liftMongodbRecord = "net.liftweb" %% "lift-mongodb-record" % liftVersion % "compile"
@@ -83,12 +84,12 @@ class BigtopProject(info: ProjectInfo) extends ParentProject(info) {
   
   lazy val core = bigtopProject("core", liftCommon, liftWebkit, liftRecord, specs, scalatest, scalaCheck, liftTestkit, jetty % "test", bcrypt)()
   lazy val debug = bigtopProject("debug", liftCommon, liftWebkit, scalatest)()
-  lazy val record = bigtopProject("record", liftCommon, liftWebkit, liftRecord, liftSquerylRecord, scalatest)(debug, core)
-  lazy val report = bigtopProject("report", liftCommon, liftWebkit, scalatest)(debug, core)
-  lazy val routes = bigtopProject("routes", liftCommon, liftWebkit, specs, jetty, scalatra, blueeyes)(debug, core)
+  lazy val record = bigtopProject("record", liftCommon, liftWebkit, liftRecord, liftSquerylRecord, scalatest)(core, debug)
+  lazy val report = bigtopProject("report", liftCommon, liftWebkit, scalatest)(core, debug)
+  lazy val routes = bigtopProject("routes", liftCommon, liftWebkit, specs, jetty, scalatra, blueeyes)(core, debug)
   lazy val squeryl = bigtopProject("squeryl", liftCommon, liftWebkit, liftSquerylRecord, postgresql, c3p0, scalatest)(debug, core, record)
   lazy val mongodb = bigtopProject("mongodb", liftCommon, liftWebkit, liftMongodb, liftMongodbRecord, rogue, scalatest)(debug, core, record)
-  lazy val util = bigtopProject("util", liftCommon, liftWebkit, scalatest)(debug, core)
+  lazy val util = bigtopProject("util", liftCommon, liftWebkit, scalatest)(core, debug)
   
   lazy val doc = project(".", "doc", new BigtopDocProject(_))
   
