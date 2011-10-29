@@ -17,10 +17,14 @@
 package bigtop.routes.plain
 
 import bigtop.core.Url
+import bigtop.debug.ConsoleDebug._
 import net.liftweb.http.Req
 import org.specs._
 
 class SiteSpec extends Specification with Http {
+  
+  // Turn off smart matching on strings... in Specs 1.6.7, these tests fail if this is on:
+  noDetailedDiffs
   
   object Calculator extends Site {
   

@@ -32,3 +32,13 @@ sealed abstract class HNil extends HList {
 }
 
 case object HNil extends HNil
+
+object HList {
+  
+  type ::[H, T <: HList] = HCons[H, T]
+  
+  object :: {
+		def unapply[H,T<:HList](list: HCons[H,T]) = Some((list.head,list.tail))
+	}
+
+}

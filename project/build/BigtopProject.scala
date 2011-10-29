@@ -24,7 +24,12 @@ class BigtopProject(info: ProjectInfo) extends ParentProject(info) {
   // Disable dependencies on sub-projects:
   override def deliverProjectDependencies = Nil
 
-  val untypedRepo = "Untyped" at "http://repo.untyped.com"
+  val untypedRepo        = "Untyped"     at "http://repo.untyped.com"
+  val sonatypeRepo       = "Sonatype"    at "http://nexus.scala-tools.org/content/repositories/public"
+  val scalatoolsSnapRepo = "Scala Tools" at "http://scala-tools.org/repo-snapshots/"
+  val jbossRepo          = "JBoss"       at "http://repository.jboss.org/nexus/content/groups/public/"
+  val akkaRepo           = "Akka"        at "http://akka.io/repository/"
+  val guiceyFruitRepo    = "GuiceyFruit" at "http://guiceyfruit.googlecode.com/svn/repo/releases/"
 
   // Libraries ----------------------------------
 
@@ -67,13 +72,20 @@ class BigtopProject(info: ProjectInfo) extends ParentProject(info) {
       case _       => "org.scala-tools.testing" %% "specs" % "1.6.9" % "test"
     }
   
+  lazy val blueeyes =
+    buildScalaVersion match {
+      case "2.8.1" => "com.reportgrid" %% "blueeyes" % "0.3.28"
+      case "2.8.2" => "com.reportgrid" %% "blueeyes" % "0.3.28"
+      case _       => "com.reportgrid" %% "blueeyes" % "0.4.26"
+    }
+  
   // Subprojects --------------------------------
   
   lazy val core = bigtopProject("core", liftCommon, liftWebkit, liftRecord, specs, scalatest, scalaCheck, liftTestkit, jetty % "test", bcrypt)()
   lazy val debug = bigtopProject("debug", liftCommon, liftWebkit, scalatest)()
   lazy val record = bigtopProject("record", liftCommon, liftWebkit, liftRecord, liftSquerylRecord, scalatest)(debug, core)
   lazy val report = bigtopProject("report", liftCommon, liftWebkit, scalatest)(debug, core)
-  lazy val routes = bigtopProject("routes", liftCommon, liftWebkit, specs, jetty, scalatra)(debug, core)
+  lazy val routes = bigtopProject("routes", liftCommon, liftWebkit, specs, jetty, scalatra, blueeyes)(debug, core)
   lazy val squeryl = bigtopProject("squeryl", liftCommon, liftWebkit, liftSquerylRecord, postgresql, c3p0, scalatest)(debug, core, record)
   lazy val mongodb = bigtopProject("mongodb", liftCommon, liftWebkit, liftMongodb, liftMongodbRecord, rogue, scalatest)(debug, core, record)
   lazy val util = bigtopProject("util", liftCommon, liftWebkit, scalatest)(debug, core)
