@@ -82,6 +82,7 @@ class BigtopProject(info: ProjectInfo) extends ParentProject(info) {
   
   // Subprojects --------------------------------
   
+  lazy val ajax = bigtopProject("ajax", blueeyes, akkaActor, specs, jetty, jetty % "test")(core, debug)
   lazy val core = bigtopProject("core", liftCommon, liftWebkit, liftRecord, specs, scalatest, scalaCheck, liftTestkit, jetty % "test", bcrypt)()
   lazy val debug = bigtopProject("debug", liftCommon, liftWebkit, scalatest)()
   lazy val record = bigtopProject("record", liftCommon, liftWebkit, liftRecord, liftSquerylRecord, scalatest)(core, debug)
