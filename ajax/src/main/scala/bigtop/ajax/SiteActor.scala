@@ -18,13 +18,16 @@ package bigtop
 package ajax
 
 import akka.actor._
+import akka.event.slf4j._
 import blueeyes.concurrent._
+import blueeyes.core.data._
 import blueeyes.core.http._
-import blueeyes.core.http.HttpStatusCodes._
+import blueeyes.json.JsonAST._
+import blueeyes.json.JsonDSL._
 import java.util.UUID
 import scala.collection.mutable._
 
-class SiteActor(val initialLifePoints: Int) extends Actor {
+case class SiteActor(val initialLifePoints: Int) extends Actor with ActorUtil with Logging {
   
   case class PageData(val actor: ActorRef, var lifePoints: Int)
   
@@ -34,39 +37,66 @@ class SiteActor(val initialLifePoints: Int) extends Actor {
   
   def receive = {
     // Return true
-    case Register(pageUuid, funcUuid, fn) =>
-      val data =
-        PageData(
-          Actor.actorOf(new PageActor).start,
-          initialLifePoints)
-      
-      pages.put(pageUuid, data)
-      self.forward(data.actor)
+    case msg @ Register(pageUuid, funcUuid, fn) =>
+      println(this + " received " + msg)
+
+      pages.getOrElseUpdate(
+        pageUuid,
+        PageData(Actor.actorOf(new PageActor(pageUuid)).start, initialLifePoints)
+      ).actor.forward(msg)
     
     // Return Future[HttpResponse[S]]
-    case Invoke(pageUuid, funcUuid, req) =>
+    case msg @ Invoke(_, pageUuid, funcUuid, req) =>
+      println(this + " received Invoke(" + pageUuid + ", " + funcUuid + ") " + pages)
+
       pages.get(pageUuid) match {
-        case Some(data) =>
-          self.forward(data.actor)
-        
-        case None =>
-          self.reply(Future.sync(HttpResponse(HttpStatus(NotFound))))
+        case Some(data) => data.actor.forward(msg)
+        case None       => self.reply(Future.sync(notFoundResponse))
       }
 
     // No return value
-    case Heartbeat(pageUuid) =>
+    case msg @ Heartbeat(pageUuid) =>
+      println(this + " received " + msg)
+
       pages.get(pageUuid).foreach(_.lifePoints = initialLifePoints)
 
     // No return value
-    case Tick =>
+    case msg @ Tick =>
+      println(this + " received " + msg)
+
       pages.foreach { case (uuid, data) =>
         if(data.lifePoints == 0) {
           pages.remove(uuid)
-          data.actor ! Kill
+          data.actor.stop
         } else {
           data.lifePoints = data.lifePoints - 1
         }
       }
+    
+    // Return JValue
+    case msg @ Status =>
+      println(this + " received " + msg)
+
+      val response: JObject =
+        pages.toList.map { case (uuid, data) =>
+          val dataJson: JObject =
+            ("lifePoints" -> data.lifePoints) ~
+            ("functions"  -> (data.actor !! Status).get.asInstanceOf[JValue])
+          
+          uuid.toString -> dataJson
+        }.foldLeft(JObject.empty)(_ ~ _)
+
+      self.reply(response)
+    
+    case other =>
+      println(this + " received unknown message: " + other)
+  }
+
+  override def postStop = {
+    super.postStop
+    pages.foreach { case (uuid, data) =>
+      data.actor.stop
+    }
   }
   
 }

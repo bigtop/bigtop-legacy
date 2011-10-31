@@ -38,6 +38,7 @@ class BigtopProject(info: ProjectInfo) extends ParentProject(info) {
   val rogueVersion = "1.0.26"
   
   lazy val akkaActor = "se.scalablesolutions.akka" % "akka-actor" % "1.1.2"
+  lazy val akkaLogging = "se.scalablesolutions.akka" % "akka-slf4j" % "1.1.2"
   lazy val bcrypt = "org.mindrot" % "jbcrypt" % "0.3m" % "provided"
   lazy val c3p0 = "c3p0" % "c3p0" % "0.9.1.2" % "provided"
   lazy val jetty = "org.mortbay.jetty" % "jetty" % "6.1.22"
@@ -82,7 +83,7 @@ class BigtopProject(info: ProjectInfo) extends ParentProject(info) {
   
   // Subprojects --------------------------------
   
-  lazy val ajax = bigtopProject("ajax", blueeyes, akkaActor, specs, jetty, jetty % "test")(core, debug)
+  lazy val ajax = bigtopProject("ajax", blueeyes, akkaActor, akkaLogging, specs, jetty, jetty % "test")(core, debug)
   lazy val core = bigtopProject("core", liftCommon, liftWebkit, liftRecord, specs, scalatest, scalaCheck, liftTestkit, jetty % "test", bcrypt)()
   lazy val debug = bigtopProject("debug", liftCommon, liftWebkit, scalatest)()
   lazy val record = bigtopProject("record", liftCommon, liftWebkit, liftRecord, liftSquerylRecord, scalatest)(core, debug)

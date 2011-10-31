@@ -17,22 +17,13 @@
 package bigtop
 package ajax
 
-import bigtop.routes.core._
-import bigtop.routes.core.HList._
-import blueeyes.concurrent.Future
-import blueeyes.concurrent.test.FutureMatchers
+import blueeyes.core.data._
 import blueeyes.core.http._
-import blueeyes.core.service._
-import blueeyes.core.data.BijectionsIdentity
-import org.specs.Specification
-import org.specs.matcher.Matchers._
+import blueeyes.core.http.HttpStatusCodes._
 
-class AjaxRequestHandlerCombinatorsSpec
-    extends Specification 
-    with AjaxRequestHandlerCombinators 
-    with BijectionsIdentity 
-    with FutureMatchers {
+trait ActorUtil {
   
-  
+  val notFoundResponse: HttpResponse[ByteChunk] =
+    HttpResponse(HttpStatus(NotFound))
   
 }

@@ -18,31 +18,57 @@ package bigtop
 package ajax
 
 import akka.actor._
+import akka.event.slf4j._
 import blueeyes.concurrent._
+import blueeyes.core.data._
 import blueeyes.core.http._
-import blueeyes.core.http.HttpStatusCodes._
 import blueeyes.core.service._
+import blueeyes.json.JsonAST._
+import blueeyes.json.JsonDSL._
 import java.util.UUID
 import scala.collection.mutable._
 
-class PageActor extends Actor {
+case class PageActor(val pageUuid: UUID) extends Actor with ActorUtil with Logging {
   
-  val functions: Map[UUID, HttpRequestHandler2[_, _]] = new HashMap
+  val functions: Map[UUID, HttpRequestHandler[ByteChunk]] = new HashMap
   
   def receive = {
     // Return true
-    case Register(_, uuid, fn) =>
-      functions.put(uuid, fn)
+    case msg @ Register(_, funcUuid, fn) =>
+      functions.put(funcUuid, fn)
+      println(this + " received " + msg + " " + functions)
       self.reply(true)
     
     // Return Future[HttpResponse[S]]
-    case Invoke(_, uuid, request) =>
-      val response: Future[HttpResponse[_]] =
-        functions.get(uuid).
-                  map(_(request)).
-                  getOrElse(Future.sync(HttpResponse(HttpStatus(NotFound))))
+    case msg @ Invoke(interface, pageUuid, funcUuid, request) =>
+      println(this + " received Invoke(" + funcUuid + ") " + functions)
+
+      val response: Future[HttpResponse[ByteChunk]] =
+        functions.
+          get(funcUuid).
+          map { func =>
+            AjaxInterface.withInterface(interface) {
+              interface.withPage(pageUuid) {
+                func(request)
+              }
+            }
+          }.getOrElse(Future.sync(notFoundResponse))
       
       self.reply(response)
+    
+    // Return JValue
+    case msg @ Status =>
+      println(this + " received " + msg)
+
+      val response: JArray =
+        functions.toList.map { case (uuid, data) =>
+          JString(uuid.toString)
+        }
+
+      self.reply(response)
+    
+    case other =>
+      println(this + " received unknown message: " + other)
   }
-  
+
 }

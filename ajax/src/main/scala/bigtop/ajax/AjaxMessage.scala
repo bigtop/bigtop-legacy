@@ -17,6 +17,7 @@
 package bigtop
 package ajax
 
+import blueeyes.core.data._
 import blueeyes.core.http._
 import blueeyes.core.service._
 import java.util.UUID
@@ -24,13 +25,16 @@ import java.util.UUID
 trait AjaxMessage
 
 /** Register a function to be called later. */
-case class Register(pageUuid: UUID, funcUuid: UUID, fn: HttpRequestHandler2[_, _]) extends AjaxMessage
+case class Register(pageUuid: UUID, funcUuid: UUID, fn: HttpRequestHandler[ByteChunk]) extends AjaxMessage
 
 /** Invoke a previously stored function passing in the supplied request. */
-case class Invoke(pageUuid: UUID, funcUuid: UUID, req: HttpRequest[_]) extends AjaxMessage
+case class Invoke(interface: AjaxInterface, pageUuid: UUID, funcUuid: UUID, req: HttpRequest[ByteChunk]) extends AjaxMessage
 
 /** Keepalive signal - reset the life count for the specified page. */
 case class Heartbeat(pageUuid: UUID) extends AjaxMessage
 
 /** Clock tick - decrement the life count of all pages. */
 case object Tick extends AjaxMessage
+
+/** Debug only - returns diagnostic information as a JObject. */
+case object Status extends AjaxMessage
