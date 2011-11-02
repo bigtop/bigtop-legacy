@@ -89,6 +89,7 @@ class BigtopProject(info: ProjectInfo) extends ParentProject(info) {
   lazy val record = bigtopProject("record", liftCommon, liftWebkit, liftRecord, liftSquerylRecord, scalatest)(core, debug)
   lazy val report = bigtopProject("report", liftCommon, liftWebkit, scalatest)(core, debug)
   lazy val routes = bigtopProject("routes", liftCommon, liftWebkit, specs, jetty, scalatra, blueeyes)(core, debug)
+  lazy val socketio = bigtopProject("io", blueeyes, akkaActor, akkaLogging, specs, jetty, jetty % "test")(core, debug)
   lazy val squeryl = bigtopProject("squeryl", liftCommon, liftWebkit, liftSquerylRecord, postgresql, c3p0, scalatest)(debug, core, record)
   lazy val mongodb = bigtopProject("mongodb", liftCommon, liftWebkit, liftMongodb, liftMongodbRecord, rogue, scalatest)(debug, core, record)
   lazy val util = bigtopProject("util", liftCommon, liftWebkit, scalatest)(core, debug)
