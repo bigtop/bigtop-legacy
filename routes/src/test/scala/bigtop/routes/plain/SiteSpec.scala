@@ -22,6 +22,8 @@ import org.specs._
 
 class SiteSpec extends Specification with Http {
   
+  noDetailedDiffs
+  
   object Calculator extends Site {
   
     // Routing table:

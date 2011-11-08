@@ -24,7 +24,7 @@ import org.joda.time._
  * Time-related utility methods: converting between time formats, temporal arithmetic,
  * formatting times as strings, and so on.
  */
-object TimeUtil {
+class TimeUtil {
   
   /** Equivalent to `ago(then, Calendar.getInstance)`. */
   def ago(then: Calendar): String =
@@ -65,7 +65,7 @@ object TimeUtil {
   }
   
   /** Helper that does the bulk of the grunt work for `ago()`. */
-  private def agoInner(amount: => Int, plural: String, last: String, next: String): Option[String] =
+  protected def agoInner(amount: => Int, plural: String, last: String, next: String): Option[String] =
     if(amount == 0) {
       None
     } else if(amount == -1) {
@@ -79,3 +79,5 @@ object TimeUtil {
     }
   
 }
+
+object TimeUtil extends TimeUtil
