@@ -54,6 +54,22 @@ class SocketIOSpec
   
   type Req = HttpRequest[String]
   type Res = HttpResponse[String]
+  
+  class PimpedJValue(value: JValue) {
+  
+    def asString: String =
+      (value --> classOf[JString]).value
+  
+    def asInt: Int =
+      (value --> classOf[JInt]).value.toInt
+    
+    def fieldNames: List[String] =
+      (value --> classOf[JObject]).fields.map(_.name)
+  
+  }
+  
+  implicit def pimpJValue(value: JValue): PimpedJValue =
+    new PimpedJValue(value)
 
   // Test data ----------------------------------
 
@@ -84,11 +100,7 @@ class SocketIOSpec
           
           val sessionId = 
             res.content flatMap (HandshakeResponse.apply _) match {
-              case Some(HandshakeResponse(
-                          uuid,
-                          heartbeatTimeout,
-                          connectionTimeout,
-                          supportedTransports)) =>
+              case Some(HandshakeResponse(uuid, heartbeatTimeout, connectionTimeout, supportedTransports)) =>
                 heartbeatTimeout mustEqual 1
                 connectionTimeout mustEqual 1
                 supportedTransports mustEqual List("xhr-polling")
@@ -99,9 +111,11 @@ class SocketIOSpec
             }
           
           val status = io.status
-          (status \ "heartbeatTimeout") mustEqual (1 : JValue)
-          (status \ "connectionTimeout") mustEqual (1 : JValue)
-          (status \ "sessions") mustEqual ( (sessionId.toString -> ("lifePoints" -> 10)) : JValue )
+          (status \ "heartbeatTimeout" asInt) mustEqual 1
+          (status \ "connectionTimeout" asInt) mustEqual 1
+          (status \ "sessions" fieldNames) mustEqual List(sessionId.toString)
+          // Life points should start at 10... we check for > 8 to avoid timing issues:
+          (status \ "sessions" \ sessionId.toString \ "lifePoints" asInt) must beGreaterThan(8)
         }
       }
     }
@@ -116,13 +130,42 @@ class SocketIOSpec
               case _ => fail("no session found")
             }
           
-          // Life points should start at 10:
-          (io.status \ "sessions" \ sessionId.toString \ "lifePoints" --> classOf[JInt]).value.toInt mustEqual 10
-          (io.status \ "sessions" --> classOf[JObject]).fields must notBeEmpty
+          // Life points should start at 10... we check for > 8 to avoid timing issues:
+          (io.status \ "sessions" \ sessionId.toString \ "lifePoints" asInt) must beGreaterThan(8)
+          (io.status \ "sessions" fieldNames) must notBeEmpty
           
           // Life points should count down and the pool should eventually drop all sessions:
-          (io.status \ "sessions" \ sessionId.toString \ "lifePoints" --> classOf[JInt]).value.toInt must eventually(beLessThan(10))
-          (io.status \ "sessions" --> classOf[JObject]).fields must eventually(beEmpty)
+          (io.status \ "sessions" \ sessionId.toString \ "lifePoints" asInt) must eventually(beLessThan(10))
+          (io.status \ "sessions" fieldNames) must eventually(beEmpty)
+        }
+      }
+    }
+    
+    "preserve sessions that are receiving heartbeats" in {
+      site(getRequest("/socket.io/1/")) must whenDelivered {
+        verify { (res: Res) => 
+          
+          val sessionId = 
+            res.content flatMap (HandshakeResponse.apply _) match {
+              case Some(HandshakeResponse(uuid, _, _, _)) => uuid
+              case _ => fail("no session found")
+            }
+          
+          // Life points should start at 10... we check for > 8 to avoid timing issues:
+          (io.status \ "sessions" \ sessionId.toString \ "lifePoints" asInt) must beGreaterThan(8)
+          (io.status \ "sessions" fieldNames) must notBeEmpty
+          
+          site(postRequest("/socket.io/1/" + sessionId.toString + "/xhr-polling")) must whenDelivered {
+            verify { 
+              for(repeat <- 1 to 10) {
+                
+              }
+            }
+          }
+          
+          // Life points should count down and the pool should eventually drop all sessions:
+          (io.status \ "sessions" \ sessionId.toString \ "lifePoints" asInt) must eventually(beLessThan(10))
+          (io.status \ "sessions" fieldNames) must eventually(beEmpty)
         }
       }
     }
