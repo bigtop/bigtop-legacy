@@ -70,4 +70,8 @@ trait Site[FrameworkRequest, FrameworkResponse] extends RouteBuilder[FrameworkRe
   /** Convert an implementation-specific request into a routes Request. */
   def wrapRequest(req: FrameworkRequest): Request
   
+  /** Prepend a servlet path to path if necessary to reassemble a complete path. */
+  def reassemblePath(path: List[String]) =
+    path
+  
 }

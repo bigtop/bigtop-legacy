@@ -92,11 +92,31 @@ trait Site extends core.Site[ScalatraKernel, Any] {
   
   /** Extract a URL path from the supplied request. */
   def requestPath(req: HttpServletRequest): List[String] =
-    req.getRequestURI.
+    req.getPathInfo.
         split("/").
         toList.
         map(urlDecode(_, "utf-8").trim).
         filterNot(_ == "")
+
+
+  def servletPath: List[String] =
+    kernel.request.
+           getServletPath.
+           split("/").
+           toList.
+           map(urlDecode(_, "utf-8").trim).
+           filterNot(_ == "")
+            
+  def contextPath: List[String] =
+    kernel.request.
+           getContextPath.
+           split("/").
+           toList.
+           map(urlDecode(_, "utf-8").trim).
+           filterNot(_ == "")
+  
+  override def reassemblePath(path: List[String]) =
+    contextPath ::: servletPath ::: path
   
   /** Convert a web-framework-specific request object into a routes Request. */
   def wrapRequest(kernel: ScalatraKernel): core.Request =

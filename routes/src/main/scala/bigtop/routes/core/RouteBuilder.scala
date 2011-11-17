@@ -31,7 +31,7 @@ trait RouteBuilder[FrameworkRequest, FrameworkResponse] {
       type Rt = Route0[FrameworkResponse]
       
       def >>(fn: Fn)(implicit site: Site[FrameworkRequest, FrameworkResponse]) =
-        site.addRoute(Route0(path, fn))
+        site.addRoute(Route0(site, path, fn))
     }
   
   implicit def pimpPath1[A](path: Path { type Inner = HCons[A, HNil] }) =
@@ -40,7 +40,7 @@ trait RouteBuilder[FrameworkRequest, FrameworkResponse] {
       type Rt = Route1[A, FrameworkResponse]
       
       def >>(fn: Fn)(implicit site: Site[FrameworkRequest, FrameworkResponse]) =
-        site.addRoute(Route1(path, fn))
+        site.addRoute(Route1(site, path, fn))
     }
   
   implicit def pimpPath2[A, B](path: Path { type Inner = HCons[A, HCons[B, HNil]] }) =
@@ -49,7 +49,7 @@ trait RouteBuilder[FrameworkRequest, FrameworkResponse] {
       type Rt = Route2[A, B, FrameworkResponse]
 
       def >>(fn: Fn)(implicit site: Site[FrameworkRequest, FrameworkResponse]) =
-        site.addRoute(Route2(path, fn))
+        site.addRoute(Route2(site, path, fn))
     }
   
   implicit def pimpPath3[A, B, C](path: Path { type Inner = HCons[A, HCons[B, HCons[C, HNil]]] }) =
@@ -58,7 +58,7 @@ trait RouteBuilder[FrameworkRequest, FrameworkResponse] {
       type Rt = Route3[A, B, C, FrameworkResponse]
 
       def >>(fn: Fn)(implicit site: Site[FrameworkRequest, FrameworkResponse]) =
-        site.addRoute(Route3(path, fn))
+        site.addRoute(Route3(site, path, fn))
     }
   
   implicit def pimpPath4[A, B, C, D](path: Path { type Inner = HCons[A, HCons[B, HCons[C, HCons[D, HNil]]]] }) =
@@ -67,7 +67,7 @@ trait RouteBuilder[FrameworkRequest, FrameworkResponse] {
       type Rt = Route4[A, B, C, D, FrameworkResponse]
 
       def >>(fn: Fn)(implicit site: Site[FrameworkRequest, FrameworkResponse]) =
-        site.addRoute(Route4(path, fn))
+        site.addRoute(Route4(site, path, fn))
     }
   
   implicit def pimpPath5[A, B, C, D, E](path: Path { type Inner = HCons[A, HCons[B, HCons[C, HCons[D, HCons[E, HNil]]]]] }) =
@@ -76,7 +76,7 @@ trait RouteBuilder[FrameworkRequest, FrameworkResponse] {
       type Rt = Route5[A, B, C, D, E, FrameworkResponse]
 
       def >>(fn: Fn)(implicit site: Site[FrameworkRequest, FrameworkResponse]) =
-        site.addRoute(Route5(path, fn))
+        site.addRoute(Route5(site, path, fn))
     }
 
 }

@@ -14,12 +14,16 @@
  * limitations under the License.
  */
 
-package bigtop.routes.plain
+package bigtop.routes.scalatra
 
 import bigtop.core.Url
+import javax.servlet._
+import javax.servlet.http._
+import org.scalatra._
 import org.specs._
+import scala.util.DynamicVariable
 
-class SiteSpec extends Specification with Http {
+class SiteSpec extends Specification with bigtop.routes.plain.Http {
   
   noDetailedDiffs
   
@@ -35,48 +39,67 @@ class SiteSpec extends Specification with Http {
 
     // Implementation:
 
-    def doAdd(a: Int, b: Int): Unit =
-      response.getWriter.print("%s + %s = %s".format(a, b, a + b))
+    def doAdd(a: Int, b: Int): Any =
+      "%s + %s = %s".format(a, b, a + b)
   
-    def doMultiply(a: Int, b: Int): Unit =
-      response.getWriter.print("%s * %s = %s".format(a, b, a * b))
+    def doMultiply(a: Int, b: Int): Any =
+      "%s * %s = %s".format(a, b, a * b)
     
-    def doSquare(a: Int): Unit =
+    def doSquare(a: Int): Any =
       multiply(a, a)
 
-    def doRepeat(a: String, b: Int): Unit =
-      response.getWriter.print("%s * %s = %s".format(a, b, a * b))
+    def doRepeat(a: String, b: Int): Any =
+      "%s * %s = %s".format(a, b, a * b)
   
-    def doAppend(a: List[String]): Unit =
-      response.getWriter.print("append(%s) = %s".format(a, a.mkString))
+    def doAppend(a: List[String]): Any =
+      "append(%s) = %s".format(a, a.mkString)
     
     // Hooks for tests:
     
     /** Invokes the top-level apply() method and returns the accumulated response content. */
     def testTopLevel(req: TestRequest): String = {
       val res = new TestResponse
-      _response.withValue(Some(res)) {
-        apply(req, res)
-      }
+
+      val kernel =
+        new ScalatraServlet with BigtopRoutes {
+          get(Calculator)
+        }
+
+      kernel.handle(req, res)
+
       res.buffer.toString
     }
     
     /** Invokes a route's apply() method and returns the accumulated response content. */
-    def testRouteApply(fn : => Unit): String = {
+    def testRouteApply(fn : => Any): Any = {
+      val req = new TestRequest("", "")
       val res = new TestResponse
-      _response.withValue(Some(res)) {
+
+      val kernel =
+        new ScalatraServlet with BigtopRoutes {
+          override protected val _request  = new DynamicVariable[HttpServletRequest](req)
+          override protected val _response = new DynamicVariable[HttpServletResponse](res)
+          get(Calculator)
+        }
+      
+      _kernel.withValue(Some(kernel)) {
         fn
       }
-      res.buffer.toString
     }
     
     /** Invokes a route's apply() method and returns the accumulated response content. */
     def testWithRequest[T](req: TestRequest)(fn : => T): T = {
       val res = new TestResponse
-      _request.withValue(Some(req)) {
-        _response.withValue(Some(res)) {
-          fn
+
+      val kernel =
+        new ScalatraServlet with BigtopRoutes {
+          override protected val _request  = new DynamicVariable[HttpServletRequest](req)
+          override protected val _response = new DynamicVariable[HttpServletResponse](res)
+          get(Calculator)
         }
+      
+      _kernel.withValue(Some(kernel)) {
+        fn
       }
     }
     

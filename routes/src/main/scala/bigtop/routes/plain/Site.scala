@@ -108,11 +108,28 @@ trait Site extends core.Site[HttpServletRequest, Unit] {
   
   /** Extract a URL path from the supplied request. */
   def requestPath(req: HttpServletRequest): List[String] =
-    req.getRequestURI.
+    req.getPathInfo.
         split("/").
         toList.
         map(urlDecode(_, "utf-8").trim).
         filterNot(_ == "")
+
+  def servletPath: List[String] =
+    request.getServletPath.
+            split("/").
+            toList.
+            map(urlDecode(_, "utf-8").trim).
+            filterNot(_ == "")
+            
+  def contextPath: List[String] =
+    request.getContextPath.
+            split("/").
+            toList.
+            map(urlDecode(_, "utf-8").trim).
+            filterNot(_ == "")
+  
+  override def reassemblePath(path: List[String]) =
+    contextPath ::: servletPath ::: path
   
   /** Convert a web-framework-specific request object into a routes Request. */
   def wrapRequest(req: HttpServletRequest): core.Request =

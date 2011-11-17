@@ -22,6 +22,7 @@ import java.net.URLEncoder.{encode => urlEncode}
 import HListOps._
 
 class Route[Args <: HList, FrameworkResponse](
+  site: Site[_, FrameworkResponse],
   pattern: Path { type Inner = Args },
   fn: (Args) => FrameworkResponse
 ) {
@@ -48,13 +49,13 @@ class Route[Args <: HList, FrameworkResponse](
   
   /** Generate a Url from the supplied HList. */
   private[routes] def url(args: Args): Url =
-    Url(path = pattern.encode(args))
+    Url(path = site.reassemblePath(pattern.encode(args)))
   
   /** Generate a URL path string from the supplied HList. */
   private[routes] def path(args: Args): String =
-    pattern.encode(args).
-            map(urlEncode(_, "utf-8")).
-            mkString("/", "/", "")
+    site.reassemblePath(pattern.encode(args)).
+         map(urlEncode(_, "utf-8")).
+         mkString("/", "/", "")
   
   /** Generate an HTTP response from the supplied HList. */
   private[routes] def apply(args: Args) =
@@ -63,9 +64,10 @@ class Route[Args <: HList, FrameworkResponse](
 }
 
 case class Route0[FrameworkResponse](
+  val site: Site[_, FrameworkResponse],
   val pattern: Path { type Inner = HNil },
   val fn: () => FrameworkResponse
-) extends Route[HNil, FrameworkResponse](pattern, hlistFunction0(fn)) {
+) extends Route[HNil, FrameworkResponse](site, pattern, hlistFunction0(fn)) {
 
   /** Generate a Url from the supplied arguments. */
   def url(): Url =
@@ -82,9 +84,10 @@ case class Route0[FrameworkResponse](
 }
 
 case class Route1[A, FrameworkResponse](
+  val site: Site[_, FrameworkResponse],
   val pattern: Path { type Inner = HCons[A, HNil] },
   val fn: (A) => FrameworkResponse
-) extends Route(pattern, hlistFunction1(fn)) {
+) extends Route(site, pattern, hlistFunction1(fn)) {
 
   /** Generate a Url from the supplied arguments. */
   def url(a: A): Url =
@@ -101,9 +104,10 @@ case class Route1[A, FrameworkResponse](
 }
 
 case class Route2[A, B, FrameworkResponse](
+  val site: Site[_, FrameworkResponse],
   val pattern: Path { type Inner = HCons[A, HCons[B, HNil]] },
   val fn: (A, B) => FrameworkResponse
-) extends Route(pattern, hlistFunction2(fn)) {
+) extends Route(site, pattern, hlistFunction2(fn)) {
 
   /** Generate a Url from the supplied arguments. */
   def url(a: A, b: B): Url =
@@ -120,9 +124,10 @@ case class Route2[A, B, FrameworkResponse](
 }
 
 case class Route3[A, B, C, FrameworkResponse](
+  val site: Site[_, FrameworkResponse],
   val pattern: Path { type Inner = HCons[A, HCons[B, HCons[C, HNil]]] },
   val fn: (A, B, C) => FrameworkResponse
-) extends Route(pattern, hlistFunction3(fn)) {
+) extends Route(site, pattern, hlistFunction3(fn)) {
 
   /** Generate a Url from the supplied arguments. */
   def url(a: A, b: B, c: C): Url =
@@ -139,9 +144,10 @@ case class Route3[A, B, C, FrameworkResponse](
 }
 
 case class Route4[A, B, C, D, FrameworkResponse](
+  val site: Site[_, FrameworkResponse],
   val pattern: Path { type Inner = HCons[A, HCons[B, HCons[C, HCons[D, HNil]]]] },
   val fn: (A, B, C, D) => FrameworkResponse
-) extends Route(pattern, hlistFunction4(fn)) {
+) extends Route(site, pattern, hlistFunction4(fn)) {
 
   /** Generate a Url from the supplied arguments. */
   def url(a: A, b: B, c: C, d: D): Url =
@@ -158,9 +164,10 @@ case class Route4[A, B, C, D, FrameworkResponse](
 }
 
 case class Route5[A, B, C, D, E, FrameworkResponse](
+  val site: Site[_, FrameworkResponse],
   val pattern: Path { type Inner = HCons[A, HCons[B, HCons[C, HCons[D, HCons[E, HNil]]]]] },
   val fn: (A, B, C, D, E) => FrameworkResponse
-) extends Route(pattern, hlistFunction5(fn)) {
+) extends Route(site, pattern, hlistFunction5(fn)) {
 
   /** Generate a Url from the supplied arguments. */
   def url(a: A, b: B, c: C, d: D, e: E): Url =

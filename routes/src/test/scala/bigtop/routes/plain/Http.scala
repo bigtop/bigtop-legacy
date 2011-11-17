@@ -24,25 +24,28 @@ import org.specs.matcher.Matcher
 /** Helper methods for constructing and matching on Lift requests and responses. */
 trait Http {
 
-  case class TestRequest(val path: String) extends HttpServletRequest {
+  case class TestRequest(val pathInfo: String, val servletPath: String = "", val contextPath: String = "") extends HttpServletRequest {
+
+    val attrs = new java.util.HashMap[String, java.lang.Object]
+    val paramMap = new java.util.HashMap[Any, Any]
 
     def getAuthType: String = ""
-    def getContextPath: String = ""
+    def getContextPath: String = contextPath
     def getCookies: Array[Cookie] = new Array(0)
     def getDateHeader(name: String): Long = 0L
     def getHeader(name: String): String = ""
     def getHeaderNames: java.util.Enumeration[Any] = null
     def getHeaders(name: String): java.util.Enumeration[Any] = null
     def getIntHeader(name: String): Int = 0
-    def getMethod: String = ""
-    def getPathInfo: String = "" 
+    def getMethod: String = "GET"
+    def getPathInfo: String = pathInfo 
     def getPathTranslated: String = ""
     def getQueryString: String = ""
     def getRemoteUser: String = ""
     def getRequestedSessionId: String = ""
-    def getRequestURI: String = path
+    def getRequestURI: String = contextPath + servletPath + pathInfo
     def getRequestURL: StringBuffer = new StringBuffer("")
-    def getServletPath: String = ""
+    def getServletPath: String = servletPath
     def getSession: HttpSession = null
     def getSession(create: Boolean): HttpSession = null
     def getUserPrincipal: java.security.Principal = null
@@ -52,7 +55,7 @@ trait Http {
     def isRequestedSessionIdValid: Boolean = false
     def isUserInRole(role: String): Boolean = false
     
-    def getAttribute(name: String): java.lang.Object = null
+    def getAttribute(name: String): java.lang.Object = attrs.get(name)
     def getAttributeNames(): java.util.Enumeration[Any] = null
     def getCharacterEncoding(): String = ""
     def getContentLength(): Int = 0
@@ -63,10 +66,10 @@ trait Http {
     def getLocales(): java.util.Enumeration[Any] = null
     def getLocalName(): String = null
     def getLocalPort(): Int = 0
-    def getParameter(name: String): String = ""
-    def getParameterMap(): java.util.Map[Any, Any] = null
-    def getParameterNames(): java.util.Enumeration[Any] = null
-    def getParameterValues(name: String): Array[String] = new Array(0)
+    def getParameter(name: String): String = sys.error("not implemented")
+    def getParameterMap(): java.util.Map[Any, Any] = paramMap
+    def getParameterNames(): java.util.Enumeration[Any] = sys.error("not implemented")
+    def getParameterValues(name: String): Array[String] = sys.error("not implemented")
     def getProtocol(): String = ""
     def getReader(): java.io.BufferedReader = null
     def getRealPath(path: String): String = ""
@@ -79,7 +82,7 @@ trait Http {
     def getServerPort(): Int = 0
     def isSecure(): Boolean = false
     def removeAttribute(name: String): Unit = {}
-    def setAttribute(name: String, value: java.lang.Object): Unit = {}
+    def setAttribute(name: String, value: java.lang.Object): Unit = attrs.put(name, value)
     def setCharacterEncoding(env: String): Unit = {}
     
     override def equals(that: Any) =
@@ -93,7 +96,7 @@ trait Http {
   class TestResponse extends HttpServletResponse {
     import java.io._
     
-    val buffer = new StringWriter
+    val buffer = new ByteArrayOutputStream
     
     def addCookie(cookie: Cookie): Unit = {}
     def addDateHeader(name: String, date: Long): Unit = {}
@@ -124,10 +127,18 @@ trait Http {
     def getLocale: java.util.Locale = null
     
     def getOutputStream: ServletOutputStream =
-      null
+      new ServletOutputStream {
+        def write(i: Int) =
+          buffer.write(i)
+      }
     
     def getWriter: PrintWriter =
-      new PrintWriter(buffer)
+      new PrintWriter(new OutputStreamWriter(buffer)) {
+        override def print(str: String) = {
+          super.print(str)
+          super.flush
+        }
+      }
     
     def isCommitted: Boolean = false
     def reset: Unit = {}
