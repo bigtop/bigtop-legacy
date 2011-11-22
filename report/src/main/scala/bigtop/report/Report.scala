@@ -181,8 +181,11 @@ trait Report[T] {
             "* [onclick]" #> SHtml.ajaxInvoke(() => onPagerPage(itemIndex))
         }
     }
+
+  def bindContent: CssSel =
+    bindContent(reportModel.reportItems(searchTerm.is, order.is, start.is, count.is))
   
-  def bindContent = 
+  def bindContent(items: List[T]): CssSel = 
     reportModel.reportItems(searchTerm.is, order.is, start.is, count.is) match {
       case Nil =>
         "data-report-binding=item" #> NodeSeq.Empty
