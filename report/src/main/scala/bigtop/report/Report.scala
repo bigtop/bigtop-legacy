@@ -183,7 +183,10 @@ trait Report[T] {
     }
 
   def bindContent: CssSel =
-    bindContent(reportModel.reportItems(searchTerm.is, order.is, start.is, count.is))
+    bindContent(reportItems)
+  
+  def reportItems: List[T] =
+    reportModel.reportItems(searchTerm.is, order.is, start.is, count.is)
   
   def bindContent(items: List[T]): CssSel = 
     reportModel.reportItems(searchTerm.is, order.is, start.is, count.is) match {

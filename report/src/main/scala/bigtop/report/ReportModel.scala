@@ -33,7 +33,7 @@ trait ReportModel[T] extends ReportOrderOps {
     reportColumns.flatMap(col => ReportOrder(col, true) :: 
                                  ReportOrder(col, false) :: 
                                  Nil)
-
+  
   /** The items visible on a single page of a report. */
   def reportItems(searchTerm: Option[String],
                   order: ReportOrder,
