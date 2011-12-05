@@ -47,6 +47,11 @@ trait BaseUser[T <: BaseUser[T]] extends IdRecord[T] with bigtop.record.BaseUser
   
   def fullName = firstName.is + " " + lastName.is
   
+  def usernameTaken(username: String): Boolean =
+    baseUserMeta.byUsername(username) map {
+      that => that.username.is == username && that.id != this.id
+    } getOrElse false
+
 }
 
 trait BaseUserMeta[T <: BaseUser[T]] extends IdRecordMeta[T] with bigtop.record.BaseUserMeta[T] {

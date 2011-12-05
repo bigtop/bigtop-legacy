@@ -32,6 +32,9 @@ class User private() extends Record[User] with BaseUser[User] {
   
   def save: User = this
   def delete: User = this
+  
+  def usernameTaken(username: String): Boolean =
+    false
 }
 
 object User extends User with MetaRecord[User] with BaseUserMeta[User] {

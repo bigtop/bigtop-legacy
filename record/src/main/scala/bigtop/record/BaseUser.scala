@@ -52,7 +52,11 @@ trait BaseUser[T <: BaseUser[T]] extends Record[T] with Loggable {
       super.validations
     
     def valUnique(msg: String)(username: String): List[FieldError] =
-      if(baseUserMeta.byUsername(username) == self) Nil else List(FieldError(this, msg))
+      if(usernameTaken(username))
+	List(FieldError(this, msg))
+      else
+	Nil
+				      
   }
 
   // bcrypt encrypted password:
@@ -96,6 +100,11 @@ trait BaseUser[T <: BaseUser[T]] extends Record[T] with Loggable {
    * See emailVerificationCode for more information.
    */
   val emailVerified = new BooleanField(this)
+  
+  /**
+   * Returns `true` if another user (not this user) has the specified `username`.
+   */
+  def usernameTaken(username: String): Boolean
 
   /**
    * Is this user allowed to log in?
