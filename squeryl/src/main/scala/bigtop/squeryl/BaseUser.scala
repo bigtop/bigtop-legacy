@@ -73,6 +73,9 @@ trait BaseUserMeta[T <: BaseUser[T]] extends IdRecordMeta[T] with bigtop.record.
   def byUsername(username: String): Option[T] =
     table.where(_.username === username).headOption
   
+  def byEmail(email: String): Option[T] = 
+    if (email.trim == "") None else table.where(_.email === email).headOption
+
   def byEmailVerificationCode(code: String): Option[T] =
     if(code.trim == "") None else table.where(_.emailVerificationCode === Some(code)).headOption
   

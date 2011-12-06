@@ -32,7 +32,7 @@ class User private() extends Record[User] with BaseUser[User] {
   
   def save: User = this
   def delete: User = this
-  
+
   def usernameTaken(username: String): Boolean =
     false
 }
@@ -42,6 +42,9 @@ object User extends User with MetaRecord[User] with BaseUserMeta[User] {
   def byUsername(username: String): Option[User] =
     if(username == "invalid") None else Some(createRecord.username(username))
 
+  def byEmail(email: String): Option[User] =
+    if(email == "invalid") None else Some(createRecord.email(email))
+  
   def byEmailVerificationCode(code: String): Option[User] =
     if(code == "invalid") None else Some(createRecord.emailVerificationCode(Some(code)))
   

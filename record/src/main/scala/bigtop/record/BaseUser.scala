@@ -225,6 +225,16 @@ trait BaseUserMeta[T <: BaseUser[T]] {
   def byUsername(username: String): Option[T]
   
   /**
+   * Retrieve a user from the database by email address. Override this to
+   * implement for various backends.
+   *
+   * Note the deviation from standard nomenclature. 
+   * Most byFoo methods return query objects. We can't do that here because
+   * we don't know what backend we're using. We therefore return an option instead. 
+   */
+  def byEmail(email: String): Option[T]
+
+  /**
    * Retrieve a user from the database by email verification code. Override this to
    * implement for various database backends.
    *

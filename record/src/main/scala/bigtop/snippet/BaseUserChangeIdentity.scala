@@ -43,8 +43,8 @@ class BaseUserChangeIdentity[T <: BaseUser[T]](meta: BaseUserMeta[T]) extends St
     bindUsername &
     bindSubmit
   
-  def scaffold(in: NodeSeq) =
-    render(scaffoldTemplate)
+  def scaffold =
+    "*" #> render(scaffoldTemplate)
   
   def scaffoldTemplate =
     <form method="post" class="change-identity-form">
