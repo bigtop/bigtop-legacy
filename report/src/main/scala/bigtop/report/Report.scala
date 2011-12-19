@@ -29,7 +29,7 @@ import bigtop.core._
 
 class ReportException(msg: String) extends Exception(msg)
 
-trait Report[T] {
+trait Report[T] extends Loggable {
 
   // URL parameter names ------------------------
   
@@ -103,7 +103,7 @@ trait Report[T] {
   def rewriteUrl: Url =
     List(searchTerm, order, start, count).
       foldLeft(reportUrl)((url, urlVar) => urlVar.rewriteUrl(url))
-
+  
   // Model --------------------------------------
   
   val reportModel: ReportModel[T]
@@ -221,8 +221,31 @@ trait Report[T] {
       case other => ReportOrder.Asc(Col)
     })
   
-  def onPagerNext: JsCmd = JsCmds.Alert("onPagerNext")
-  def onPagerPrev: JsCmd = JsCmds.Alert("onPagerPrev")
-  def onPagerPage(start: Int): JsCmd = JsCmds.Alert("onPagerPage " + start)
+  def onPagerNext: JsCmd =
+    count.is match {
+      case Some(num) =>
+        onPagerPage(start.is + num)
+      
+      case None =>
+        logger.warn("User clicked pager next but count was not defined.")
+        onPagerPage(start.is + 25)
+    }
+  
+  def onPagerPrev: JsCmd =
+    count.is match {
+      case Some(num) =>
+        onPagerPage(start.is - num)
+      
+      case None =>
+        logger.warn("User clicked pager prev but count was not defined.")
+        onPagerPage(start.is - 25)
+    }
+  
+  def onPagerPage(pos: Int): JsCmd = {
+    val first = 0
+    val last = reportModel.totalReportItems(searchTerm.is) - count.is.getOrElse(0)
+    start.set(math.max(first, math.min(last, pos)))
+    JsCmds.RedirectTo(rewriteUrl.toString)
+  }
 
 }

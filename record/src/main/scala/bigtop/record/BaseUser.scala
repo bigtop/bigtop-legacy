@@ -132,7 +132,7 @@ trait BaseUser[T <: BaseUser[T]] extends Record[T] with Loggable {
       signUpEmailTo,
       signUpEmailBody(signUpEmailUrl(code)))
   }
-  
+
   def signUpEmailFrom: From = From("noreply@example.com")
   def signUpEmailTo: To = To(email.is)
   def signUpEmailSubject: Subject = Subject("Welcome")
