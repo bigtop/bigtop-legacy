@@ -1,37 +1,40 @@
-Bigtop
-======
+Bigtop Legacy
+=============
 
-Bigtop is a collection of libraries that extend the excellent [Lift] web framework.
+These legacy libraries for Lift are no longer under development.
+
+The original vision for Bigtop was a collection of libraries extending the [Lift] web framework. Untyped have since refocused on developing web sites using [Blueeyes] and [Play], causing us to wipe the slate clean and start again with a [new Bigtop].
 
 [Lift]: http://liftweb.net
-
-The goals of Bigtop are to provide comprehensive and flexible libraries to automate common tasks, and to make it even easier to develop highly interactive web sites using Lift. There is a strong focus on documentation and providing a consistent architecture.
-
-Please see the [web site] for more information.
-
-[web site]: http://bigtopweb.com
+[Blueeyes]: https://github.com/jdegoes/blueeyes
+[Play]: https://github.com/playframework/Play20
+[new Bigtop]: https://github.com/bigtop/bigtop
 
 Development Status
 ------------------
 
-Bigtop is currently in extremely early alpha. There's lots of code and documentation that isn't in place yet. Please bear with us as we get ourselves up and running.
+Bigtop Legacy is no longer under development. However, we still use these libraries in a number of projects and are happy to accept bug fixes and pull requests.
 
-Getting Bigtop
---------------
+If you would would like to take ownership of any part of Bigtop Legacy, including Bigtop Routes, please contact us via the *Issues* page or the [Untyped] web site. Alternatively, just fork away and get started - it's all open source, after all.
+
+[Untyped]: http://untyped.com
+
+Getting Bigtop Legacy
+---------------------
 
 You currently have two options:
 
  - Grab the source code from our [Github] repo and build it using SBT:
  
-       git clone git://github.com/bigtop/bigtop.git bigtop
-       cd bigtop
-       sbt update
-       sbt publish-local
+        git clone git://github.com/bigtop/bigtop-legacy.git bigtop-legacy
+        cd bigtop
+        sbt update
+        sbt publish-local
 
  - Grab the artefacts directly from our [Maven] repository:
  
    - Server: `repo.untyped.com`
-   - Group: `bigtop`
+   - Group: `bigtop-legacy`
    - Artefact: `bigtop-«LIBRARY-NAME»_«SCALA-VERSION»`
    - Version: `«BIGTOP-VERSION»`
 
