@@ -1,12 +1,12 @@
-/* 
+/*
  * Copyright 2011 Untyped Ltd
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -29,9 +29,9 @@ class BigtopProject(info: ProjectInfo) extends ParentProject(info) {
   // Libraries ----------------------------------
 
   val liftVersion = "2.4-M4"
-  
+
   val rogueVersion = "1.0.26"
-  
+
   lazy val bcrypt = "org.mindrot" % "jbcrypt" % "0.3m" % "provided"
   lazy val c3p0   = "c3p0" % "c3p0" % "0.9.1.2" % "provided"
   lazy val jetty  = "org.mortbay.jetty" % "jetty" % "6.1.22"
@@ -45,30 +45,30 @@ class BigtopProject(info: ProjectInfo) extends ParentProject(info) {
   lazy val postgresql = "postgresql" % "postgresql" % "8.4-702.jdbc4"
   lazy val rogue = "com.foursquare" %% "rogue" % rogueVersion
   lazy val scalatra = "org.scalatra" %% "scalatra" % "2.0.1"
-  
+
   lazy val scalaCheck =
     buildScalaVersion match {
       case "2.8.1" => "org.scala-tools.testing" %% "scalacheck" % "1.8" % "test"
       case "2.8.2" => "org.scala-tools.testing" %% "scalacheck" % "1.8" % "test"
       case _       => "org.scala-tools.testing" %% "scalacheck" % "1.9" % "test"
     }
-  
+
   lazy val scalatest =
     buildScalaVersion match {
       case "2.8.1" => "org.scalatest" % "scalatest_2.8.1" % "1.5" % "test"
       case "2.8.2" => "org.scalatest" % "scalatest_2.8.1" % "1.5" % "test"
       case _       => "org.scalatest" % "scalatest_2.9.0" % "1.6.1" % "test"
     }
-  
+
   lazy val specs =
     buildScalaVersion match {
       case "2.8.1" => "org.scala-tools.testing" %% "specs" % "1.6.6" % "test"
       case "2.8.2" => "org.scala-tools.testing" %% "specs" % "1.6.6" % "test"
       case _       => "org.scala-tools.testing" %% "specs" % "1.6.9" % "test"
     }
-  
+
   // Subprojects --------------------------------
-  
+
   lazy val core = bigtopProject("core", liftCommon, liftWebkit, liftRecord, specs, scalatest, scalaCheck, liftTestkit, bcrypt, jetty % "test")()
   lazy val debug = bigtopProject("debug", liftCommon, liftWebkit, scalatest)()
   lazy val record = bigtopProject("record", liftCommon, liftWebkit, liftRecord, liftSquerylRecord, bcrypt, scalatest)(debug, core)
@@ -77,17 +77,17 @@ class BigtopProject(info: ProjectInfo) extends ParentProject(info) {
   lazy val squeryl = bigtopProject("squeryl", liftCommon, liftWebkit, liftSquerylRecord, postgresql, c3p0, bcrypt, scalatest)(debug, core, record)
   lazy val mongodb = bigtopProject("mongodb", liftCommon, liftWebkit, liftMongodb, liftMongodbRecord, rogue, bcrypt, scalatest)(debug, core, record)
   lazy val util = bigtopProject("util", liftCommon, liftWebkit, scalatest)(debug, core)
-  
+
   lazy val doc = project(".", "doc", new BigtopDocProject(_))
-  
+
   // Helpers ------------------------------------
-  
+
   val untypedResolver = {
     val host = System.getenv("DEFAULT_REPO_HOST")
     val path = System.getenv("DEFAULT_REPO_PATH")
     val user = System.getenv("DEFAULT_REPO_USER")
     val keyfile = new java.io.File(System.getenv("DEFAULT_REPO_KEYFILE"))
-    
+
     Resolver.sftp("Default Repo", host, path).as(user, keyfile)
   }
 
@@ -99,12 +99,12 @@ class BigtopProject(info: ProjectInfo) extends ParentProject(info) {
     project(name, "bigtop-" + name, new BigtopSubproject(_, libraries: _*), dependencies: _*)
 
   class BigtopSubproject(info: ProjectInfo, libs: ModuleID*) extends DefaultProject(info) {
-    
+
     override def libraryDependencies =
       super.libraryDependencies ++ libs
-    
+
     val publishTo = untypedResolver
-    
+
     override def packageAction =
       super.packageAction dependsOn { test }
 
@@ -112,11 +112,11 @@ class BigtopProject(info: ProjectInfo) extends ParentProject(info) {
       super.packageToPublishActions ++ Seq(packageSrc)
 
   }
-  
+
   // Documentation ------------------------------
-  
+
   class BigtopDocProject(info: ProjectInfo) extends DefaultProject(info) {
-    
+
     /** Sibling of this project, that is, other BigtopSubprojects having the same parent. */
     lazy val siblings =
       info.parent.get.projectClosure.flatMap {
@@ -150,7 +150,7 @@ class BigtopProject(info: ProjectInfo) extends ParentProject(info) {
     override def publishAction        =
       task {
         val src = outputPath / "doc" / "main" / "api"
-        val cmd = "rsync -ave ssh " + src.absolutePath + "/ api.bigtopweb.com:api.bigtopweb.com/public/htdocs/" + projectVersion.value
+        val cmd = "rsync -ave ssh " + src.absolutePath + "/ api.bigtopweb.com:api.bigtopweb.com/public/htdocs/bigtop-legacy-" + projectVersion.value
         cmd ! log
         None
       } dependsOn { doc }
@@ -160,13 +160,13 @@ class BigtopProject(info: ProjectInfo) extends ParentProject(info) {
     // To avoid write collisions with outputDirectories of parent
     override def outputRootPath        = super.outputRootPath        / "apidoc"
     override def managedDependencyPath = super.managedDependencyPath / "apidoc"
-   
+
   	override def documentOptions: Seq[ScaladocOption] =
-  		super.documentOptions ++ 
+  		super.documentOptions ++
   		Seq(SimpleDocOption("-verbose"),
   		    SimpleDocOption("-doc-source-url"),
       		SimpleDocOption("https://github.com/bigtop/bigtop/tree/master/?{FILE_PATH}"))
-  		
+
   }
 
 }
