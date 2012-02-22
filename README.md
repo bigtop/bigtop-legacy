@@ -1,10 +1,12 @@
 Bigtop Legacy
 =============
 
-These legacy libraries for Lift are no longer under development.
+**These legacy libraries for Lift are no longer under development.  
+If you would like to take ownership of any part of Bigtop Legacy, please [get in touch].**
 
 The original vision for Bigtop was a collection of libraries extending the [Lift] web framework. Untyped have since refocused on developing web sites using [Blueeyes] and [Play], causing us to wipe the slate clean and start again with a [new Bigtop].
 
+[get in touch]: http://untyped.com/contact.html
 [Lift]: http://liftweb.net
 [Blueeyes]: https://github.com/jdegoes/blueeyes
 [Play]: https://github.com/playframework/Play20
