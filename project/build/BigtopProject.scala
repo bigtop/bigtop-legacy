@@ -93,6 +93,8 @@ class BigtopProject(info: ProjectInfo) extends ParentProject(info) {
 
   val publishTo = untypedResolver
 
+  override def managedStyle = ManagedStyle.Maven
+
   // Subprojects --------------------------------
 
   def bigtopProject(name: String, libraries: ModuleID*)(dependencies: Project*) =
@@ -161,11 +163,11 @@ class BigtopProject(info: ProjectInfo) extends ParentProject(info) {
     override def outputRootPath        = super.outputRootPath        / "apidoc"
     override def managedDependencyPath = super.managedDependencyPath / "apidoc"
 
-  	override def documentOptions: Seq[ScaladocOption] =
-  		super.documentOptions ++
-  		Seq(SimpleDocOption("-verbose"),
-  		    SimpleDocOption("-doc-source-url"),
-      		SimpleDocOption("https://github.com/bigtop/bigtop/tree/master/?{FILE_PATH}"))
+   override def documentOptions: Seq[ScaladocOption] =
+     super.documentOptions ++
+     Seq(SimpleDocOption("-verbose"),
+         SimpleDocOption("-doc-source-url"),
+         SimpleDocOption("https://github.com/bigtop/bigtop/tree/master/?{FILE_PATH}"))
 
   }
 
