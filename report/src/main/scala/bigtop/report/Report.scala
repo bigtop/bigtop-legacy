@@ -1,12 +1,12 @@
-/* 
+/*
  * Copyright 2011 Untyped Ltd
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -32,7 +32,7 @@ class ReportException(msg: String) extends Exception(msg)
 trait Report[T] extends Loggable {
 
   // URL parameter names ------------------------
-  
+
   /** The URL parameter name for the search term. */
   val searchTermParamName = "q"
 
@@ -44,15 +44,15 @@ trait Report[T] extends Loggable {
 
   /** The URL parameter name for the count of items to show on a report page. */
   val countParamName = "count"
-  
+
   // URL parameter defaults ---------------------
-  
+
   /**
    * The default item to start on if no URL parameter is specified.
    * Unless overridden, this defaults to 0.
    */
   lazy val defaultStart: Int = 0
-  
+
   /**
    * The default number of items per page if no URL parameter is specified.
    * Unless overridden, this defaults to 0.
@@ -64,7 +64,7 @@ trait Report[T] extends Loggable {
    * Unless overridden, this defaults to be the first column in ascending order.
    */
   lazy val defaultOrder: ReportOrder = ReportOrder.Asc(reportModel.reportColumns(0))
-  
+
   // UrlVars ------------------------------------
 
   object OrderParam extends UrlParam[ReportOrder] {
@@ -72,7 +72,7 @@ trait Report[T] extends Loggable {
 
     def encodeParam(value: ReportOrder): Box[String] =
       if(value == defaultOrder) Empty else Full(value.param)
-    
+
     def decodeParam(param: Box[String]): ReportOrder =
       ReportOrder.fromParam(param, reportModel.reportColumns).
                   getOrElse(defaultOrder)
@@ -83,7 +83,7 @@ trait Report[T] extends Loggable {
 
     def encodeParam(value: Option[Int]): Box[String] =
       if(value == defaultCount) None else value.map(_.toString)
-    
+
     def decodeParam(param: Box[String]): Option[Int] =
       param.flatMap(s => tryo(Integer.parseInt(s))).or(defaultCount)
   }
@@ -92,103 +92,114 @@ trait Report[T] extends Loggable {
   object order extends UrlRequestVar(OrderParam)
   object start extends IntUrlRequestVar(startParamName, defaultStart)
   object count extends UrlRequestVar(CountParam)
-  
+
   /**
    * The URL used to open this page.
    * We store this in a val at snippet creation time in case we end up rewriting URLs
    * during an AJAX call (which rewrites the /ajax_request/foo URL).
    */
   val reportUrl = Url.liftUrl
-  
+
   def rewriteUrl: Url =
     List(searchTerm, order, start, count).
       foldLeft(reportUrl)((url, urlVar) => urlVar.rewriteUrl(url))
-  
+
   // Model --------------------------------------
-  
+
   val reportModel: ReportModel[T]
-  
+
   // Rendering ----------------------------------
-  
+
   def render =
     bindControls &
     bindContent
-  
+
   def bindControls =
     bindSearchField &
     bindSortCombo &
     bindSortLinks &
     bindPager
-  
+
   def bindSearchField =
     "data-report-binding=search-field" #>
       SHtml.ajaxText(searchTerm.is.getOrElse(""), onSearch _, "type" -> "search")
-  
+
   def bindSortCombo =
     "data-report-binding=sort-combo" #> SHtml.ajaxSelectObj(
       reportModel.reportOrders.map(ord => ord -> sortComboLabel(ord)),
       Some(order.is),
       onSort _)
-  
+
   def sortComboLabel(ord: ReportOrder): String =
     "Sort by " + ord.col.label + " - " + (if(ord.asc) "ascending" else "descending")
-  
+
   def bindSortLinks =
     reportModel.reportColumns.map { col =>
       ("data-report-binding=sort-" + col.id + " [onclick]") #> SHtml.ajaxInvoke(() => onResort(col))
     }.foldLeft("* ^^" #> "ignored")(_ & _)
-  
+
   def bindPager = {
-    val pages = calcPages
-    bindPagerPrev(pages) &
-    bindPagerNext(pages) &
-    bindPagerPages(pages)
+    val (pages, currentPage) = calcPages
+    bindPagerPrev(pages, currentPage) &
+    bindPagerNext(pages, currentPage) &
+    bindPagerPages(pages, currentPage)
   }
-    
-  /** List of page indices, each of the form (itemIndex, pageIndex), e.g.: (0 -> 0) :: (5 -> 1) :: ... */
-  private[report] def calcPages: List[(Int,Int)] =
+
+  /** List of page indices, each of the form (itemIndex, pageIndex), e.g.: (0 -> 0) :: (5 -> 1) :: ...
+   * Returned along side the current page index.
+   */
+  private[report] def calcPages: (List[(Int,Int)], Int) =
     count.is match {
       case Some(count) =>
-        0.until(reportModel.totalReportItems(searchTerm.is), count).toList.zipWithIndex
-      
+        (
+          0.until(reportModel.totalReportItems(searchTerm.is), count).toList.zipWithIndex,
+          (start.is / count).toInt
+        )
+
       // If count is None (i.e. no paging), there's only ever one page:
       case None =>
-        List((0, 0))
+        ( List((0, 0)), 0 )
     }
-      
-  def bindPagerPrev(pages: List[(Int, Int)]) =
+
+  def bindPagerPrev(pages: List[(Int, Int)], currentPage: Int) =
     if(pages.length <= 1) {
       "data-report-binding=pager-prev" #> NodeSeq.Empty
-    } else {
+    } else if(currentPage > 0) {
       "data-report-binding=pager-prev [onclick]" #> SHtml.ajaxInvoke(onPagerPrev _)
+    } else {
+      "data-report-binding=pager-prev [class+]" #> "disabled"
     }
-  
-  def bindPagerNext(pages: List[(Int, Int)]) =
+
+  def bindPagerNext(pages: List[(Int, Int)], currentPage: Int) =
     if(pages.length <= 1) {
       "data-report-binding=pager-next" #> NodeSeq.Empty
-    } else {
+    } else if(currentPage < pages.length - 1) {
       "data-report-binding=pager-next [onclick]" #> SHtml.ajaxInvoke(onPagerNext _)
+    } else {
+      "data-report-binding=pager-next [class+]" #> "disabled"
     }
-  
-  def bindPagerPages(pages: List[(Int, Int)]) =
+
+  def bindPagerPages(pages: List[(Int, Int)], currentPage: Int) =
     pages match {
       case _ :: Nil =>
         "data-report-binding=pager-page" #> NodeSeq.Empty
-        
+
       case pages =>
         "data-report-binding=pager-page" #> pages.map {
-          case (itemIndex, pageIndex) => 
-            "* [onclick]" #> SHtml.ajaxInvoke(() => onPagerPage(itemIndex))
+          case (itemIndex, pageIndex) =>
+            "* [class+]" #> (if(pageIndex == currentPage) "active" else "") &
+            "* [onclick]" #> SHtml.ajaxInvoke(() => onPagerPage(itemIndex)) &
+            "* *" #> itemIndex
         }
     }
 
   def bindContent: CssSel =
     bindContent(reportItems)
-  
+
   def reportItems: List[T] =
     reportModel.reportItems(searchTerm.is, order.is, start.is, count.is)
-  
-  def bindContent(items: List[T]): CssSel = 
+
+  def bindContent(items: List[T]): CssSel =
     reportModel.reportItems(searchTerm.is, order.is, start.is, count.is) match {
       case Nil =>
         "data-report-binding=item" #> NodeSeq.Empty
@@ -197,11 +208,11 @@ trait Report[T] extends Loggable {
         "data-report-binding=item" #> items.map("*" #> bindItem(_)) &
         "data-report-binding=empty" #> NodeSeq.Empty
     }
-  
+
   def bindItem(item: T): CssSel
 
   // AJAX handlers ------------------------------
-  
+
   def onSearch(term: String): JsCmd = {
     searchTerm.set(term.trim match {
       case "" => None
@@ -209,41 +220,50 @@ trait Report[T] extends Loggable {
     })
     JsCmds.RedirectTo(rewriteUrl.toString)
   }
-  
+
   def onSort(ord: ReportOrder): JsCmd = {
     order.set(ord)
     JsCmds.RedirectTo(rewriteUrl.toString)
   }
-  
+
   def onResort(Col: ReportColumn): JsCmd =
     onSort(order.is match {
       case ord @ ReportOrder(Col, _) => ord.reverse
       case other => ReportOrder.Asc(Col)
     })
-  
+
   def onPagerNext: JsCmd =
     count.is match {
       case Some(num) =>
         onPagerPage(start.is + num)
-      
+
       case None =>
-        logger.warn("User clicked pager next but count was not defined.")
-        onPagerPage(start.is + 25)
+        logger.warn("All results are on one page.")
+        onPagerPage(start.is)
     }
-  
+
   def onPagerPrev: JsCmd =
     count.is match {
       case Some(num) =>
         onPagerPage(start.is - num)
-      
+
       case None =>
-        logger.warn("User clicked pager prev but count was not defined.")
-        onPagerPage(start.is - 25)
+        logger.warn("All results are on one page.")
+        onPagerPage(start.is)
     }
-  
+
   def onPagerPage(pos: Int): JsCmd = {
     val first = 0
-    val last = reportModel.totalReportItems(searchTerm.is) - count.is.getOrElse(0)
+    val total = reportModel.totalReportItems(searchTerm.is)
+    val last =
+      count.is match {
+        case Some(count) =>
+          // Number of full pages onto which the results will fit:
+          val pages = ((total / count).toInt + 1)
+          pages * count
+        case None =>
+          total
+      }
     start.set(math.max(first, math.min(last, pos)))
     JsCmds.RedirectTo(rewriteUrl.toString)
   }
