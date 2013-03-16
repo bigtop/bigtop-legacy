@@ -189,7 +189,7 @@ trait Report[T] extends Loggable {
           case (itemIndex, pageIndex) =>
             "* [class+]" #> (if(pageIndex == currentPage) "active" else "") &
             "* [onclick]" #> SHtml.ajaxInvoke(() => onPagerPage(itemIndex)) &
-            "* *" #> itemIndex
+            "* *" #> pageIndex
         }
     }
 
