@@ -187,9 +187,9 @@ trait Report[T] extends Loggable {
       case pages =>
         "data-report-binding=pager-page" #> pages.map {
           case (itemIndex, pageIndex) =>
-            "* [class+]" #> (if(pageIndex == currentPage) "active" else "") &
-            "* [onclick]" #> SHtml.ajaxInvoke(() => onPagerPage(itemIndex)) &
-            "* *" #> pageIndex
+            "li [class+]" #> (if(pageIndex == currentPage) "active" else "") &
+            "a [onclick]" #> SHtml.ajaxInvoke(() => onPagerPage(itemIndex)) &
+            "a *" #> pageIndex
         }
     }
 
