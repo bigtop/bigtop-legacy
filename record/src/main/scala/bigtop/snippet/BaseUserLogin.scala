@@ -1,12 +1,12 @@
-/* 
+/*
  * Copyright 2011 Untyped Ltd
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -30,27 +30,27 @@ import bigtop.snippet.SnippetUtil._
 
 /** Handles BaseUser login. */
 class BaseUserLogin[T <: BaseUser[T]](meta: BaseUserMeta[T]) extends StatefulSnippet with Loggable {
-  
+
   /** The username */
   var username = ""
-  
+
   /** The user's password */
   var password = ""
 
-  def dispatch = { 
+  def dispatch = {
     case "render" => render
     case "scaffold" => scaffold
   }
-  
+
   def render =
     bindUsername &
     bindPassword &
     bindSubmit &
     bindForgotPassword
-  
+
   def scaffold(in: NodeSeq) =
     render(scaffoldTemplate)
-  
+
   def scaffoldTemplate =
     <form method="post" class="login-form">
       <div class="field-wrapper">
@@ -69,36 +69,36 @@ class BaseUserLogin[T <: BaseUser[T]](meta: BaseUserMeta[T]) extends StatefulSni
       </div>
       <div class="submit-wrapper">
         { S.param("go").map(go => <input type="hidden" name="go" value={go} />).getOrElse(NodeSeq.Empty) }
-        <input data-login-binding="submit" type="submit" class="submit" />
-        <input data-login-binding="forgot-password" type="submit" class="forgot-password" />
+        <input data-login-binding="submit" type="submit" class="btn btn-primary submit" />
+        <input data-login-binding="forgot-password" type="submit" class="btn forgot-password" />
       </div>
     </form>
-  
+
   def scaffoldUsernameLabel: NodeSeq =
     Text("Username")
-  
+
   def bindUsername =
-    "data-login-binding=username" #> 
+    "data-login-binding=username" #>
     preserveAttrs(SHtml.text(username, onUsernameChange _), "name" :: Nil)
-  
+
   def bindPassword =
-    "data-login-binding=password" #> 
+    "data-login-binding=password" #>
     preserveAttrs(SHtml.password(password, onPasswordChange _), "name" :: Nil)
-  
+
   def bindSubmit =
-    "data-login-binding=submit" #> 
+    "data-login-binding=submit" #>
      preserveAttrs(SHtml.submit("Log in", onSubmit _), "name" :: Nil)
-  
+
   def bindForgotPassword =
     "data-login-binding=forgot-password" #>
     preserveAttrs(SHtml.submit("Forgot password", onForgotPassword _), "name" :: Nil)
-  
+
   def onUsernameChange(str: String): Unit =
     username = str.trim
-  
+
   def onPasswordChange(str: String): Unit =
     password = str.trim
-  
+
   def onSubmit: Unit =
     if(meta.logIn(username, password)) success else failure
 
@@ -119,5 +119,5 @@ class BaseUserLogin[T <: BaseUser[T]](meta: BaseUserMeta[T]) extends StatefulSni
     } else {
       S.error("Please enter your username and click \"Forgot password\" again.")
     }
-    
+
 }
